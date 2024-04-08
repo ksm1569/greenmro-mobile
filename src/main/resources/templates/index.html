@@ -7,30 +7,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-        }
-        .card {
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-            transition: 0.3s;
-            border-radius: 20px;
-        }
-        .card:hover {
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-        }
-        .form-control {
-            border-radius: 20px;
-        }
-        .btn-primary {
-            border-radius: 20px;
-            font-weight: bold;
-            background-color: #007bff;
-            border: none;
-        }
-        .login-title {
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+        /* Your CSS styles */
     </style>
 </head>
 <body>
@@ -41,6 +18,10 @@
                 <div class="card-body">
                     <h2 class="login-title text-center">로그인</h2>
                     <p class="text-center">환영합니다! 계속하려면 로그인하세요.</p>
+                    <div th:if="${messageLine1} or ${messageLine2}" class="alert alert-danger" role="alert">
+                        <span th:text="${messageLine1}"></span><br>
+                        <span th:text="${messageLine2}"></span>
+                    </div>
                     <form th:action="@{/login}" method="post">
                         <div class="form-group">
                             <label for="userid">아이디</label>
@@ -59,7 +40,6 @@
 </div>
 
 <!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

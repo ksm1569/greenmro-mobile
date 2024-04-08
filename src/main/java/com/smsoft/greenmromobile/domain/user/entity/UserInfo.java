@@ -78,9 +78,12 @@ public class UserInfo {
     @Column(name = "AUTH_GRP_NUMBER")
     private String authGrpNumber;
 
-    @Column(name = "USER_RELATION_SEQ")
-    private Long userRelationSeq;
-
     @Column(name = "PASSWORD_CNT")
     private Integer passwordCnt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_RELATION_SEQ", referencedColumnName = "USER_RELATION_SEQ", insertable = false, updatable = false)
+    private UserRelation userRelation;
+
+
 }
