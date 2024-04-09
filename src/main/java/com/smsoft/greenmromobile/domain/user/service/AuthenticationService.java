@@ -6,15 +6,16 @@ import com.smsoft.greenmromobile.domain.user.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Service
 public class AuthenticationService {
     private final UserInfoRepository userInfoRepository;
 
-    public boolean login(String userId, String password) {
+    public Optional<UserInfo> login(String userId, String password) {
         return userInfoRepository.findByUserId(userId)
-                .map(user -> verifyPassword(password, user))
-                .orElse(false);
+                .filter(user -> verifyPassword(password, user));
     }
 
     private boolean verifyPassword(String inputPassword, UserInfo user) {

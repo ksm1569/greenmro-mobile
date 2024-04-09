@@ -1,13 +1,15 @@
 package com.smsoft.greenmromobile.domain.user.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Date;
 
 @ToString
+@Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "USERINFO")
 @Entity
 public class UserInfo {
