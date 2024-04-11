@@ -13,41 +13,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @Controller
 public class UserController {
-
-    private final AuthenticationService authenticationService;
-
     @GetMapping("/")
-    public String loginPage(HttpSession session) {
-        Boolean isAuthenticated = (Boolean) session.getAttribute("authenticated");
-        if (isAuthenticated == null || !isAuthenticated) {
-            return "index";
-        }
+    public String loginPage(Model model, HttpSession session) {
+        String messageLine1 = (String) session.getAttribute("messageLine1");
+        String messageLine2 = (String) session.getAttribute("messageLine2");
+
+        model.addAttribute("messageLine1", messageLine1);
+        model.addAttribute("messageLine2", messageLine2);
+
+        session.removeAttribute("messageLine1");
+        session.removeAttribute("messageLine2");
+
+        return "index";
+    }
+
+    @GetMapping("/main")
+    public String main() {
         return "main";
-    }
-
-    @PostMapping("/login")
-    public String login(
-            @RequestParam("userId") String userId,
-            @RequestParam("password") String password,
-            Model model,
-            HttpSession session
-    ) {
-        return authenticationService.login(userId, password)
-                .map(userInfo -> {
-                    session.setAttribute("userInfo", userInfo);
-                    session.setAttribute("authenticated", true);
-                    return "redirect:/";
-                })
-                .orElseGet(() -> {
-                    model.addAttribute("messageLine1", "아이디 또는 비밀번호가");
-                    model.addAttribute("messageLine2", "잘못되었습니다.");
-                    return "index";
-                });
-    }
-
-    @PostMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
     }
 }
