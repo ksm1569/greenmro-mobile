@@ -1,0 +1,19 @@
+<div th:fragment="header">
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/main">MRO</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+                <form th:action="@{/mypage}" method="post">
+                    <button type="submit" class="dropdown-item">마이페이지</button>
+                </form>
+                <li><hr class="dropdown-divider"></li>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="dropdown-item">로그아웃</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>
