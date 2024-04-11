@@ -36,7 +36,7 @@ public class UserController {
                 .map(userInfo -> {
                     session.setAttribute("userInfo", userInfo);
                     session.setAttribute("authenticated", true);
-                    return "redirect:/main";
+                    return "redirect:/";
                 })
                 .orElseGet(() -> {
                     model.addAttribute("messageLine1", "아이디 또는 비밀번호가");
@@ -49,14 +49,5 @@ public class UserController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
-    }
-
-    @GetMapping("/main")
-    public String mainPage(HttpSession session) {
-        Boolean isAuthenticated = (Boolean) session.getAttribute("authenticated");
-        if (isAuthenticated == null || !isAuthenticated) {
-            return "redirect:/";
-        }
-        return "main";
     }
 }
