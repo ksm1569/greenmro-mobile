@@ -21,10 +21,23 @@
         }
     </style>
 
-    <link rel="stylesheet" th:href="@{/css/header.css}">
-    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/layout/header.css}">
+    <link rel="stylesheet" th:href="@{/css/layout/footer.css}">
 </head>
 <body th:fragment="common-scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // 메인 페이지인 경우 '뒤로 가기' 버튼 숨기기
+            var backButton = document.querySelector('.back-button');
+            if (window.location.pathname === '/main' && backButton) {
+                backButton.style.display = 'none';
+            } else if (backButton) {
+                // 메인 페이지가 아닌 경우 (또는 다른 조건), '뒤로 가기' 버튼 표시
+                backButton.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

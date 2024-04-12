@@ -1,5 +1,3 @@
-
-
 .navbar {
     background-color: #ffffff;
     height: 5em;
@@ -21,4 +19,16 @@
 .dropdown-item {
     font-family: 'omyu_pretty', sans-serif;
     font-size: 1rem;
+}
+
+.back-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.5em;
+    position: absolute;
+}
+
+.navbar-brand {
+    margin-left: 40px;
 }

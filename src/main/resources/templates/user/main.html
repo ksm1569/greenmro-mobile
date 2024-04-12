@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/user/main.css}">
+</head>
+<body>
+
+    <div th:replace="~{layout/header :: header}"></div>
+
+    <div class="main-content">
+        <div id="grid-container">
+
+        </div>
+    </div>
+
+    <div th:replace="~{layout/footer :: footer}"></div>
+
+    <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+</body>
+</html>
