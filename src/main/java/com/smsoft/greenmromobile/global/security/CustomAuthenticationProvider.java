@@ -1,4 +1,4 @@
-package com.smsoft.greenmromobile.security;
+package com.smsoft.greenmromobile.global.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;

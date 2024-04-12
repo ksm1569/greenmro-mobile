@@ -1,7 +1,7 @@
 package com.smsoft.greenmromobile.domain.user.controller;
 
-import com.smsoft.greenmromobile.security.CustomAuthenticationProvider;
-import com.smsoft.greenmromobile.security.CustomUserDetailsService;
+import com.smsoft.greenmromobile.global.security.CustomAuthenticationProvider;
+import com.smsoft.greenmromobile.global.security.CustomUserDetailsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ENC(v+xr9TqxPPErgSQltdTkAVFQVOhFyVroqMiwSy4hXclxs723ir/RjCBzNYD00XNAhXWZ4YDDDpM=)
+    username: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
+    password: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+server:
+  port: 9090

@@ -30,10 +30,10 @@ public class UserInfo {
     @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "ISUSE", nullable = false, length = 1)
+    @Column(name = "ISUSE", nullable = false, columnDefinition = "CHAR(1)")
     private String isUse;
 
-    @Column(name = "ISCOMPANY", nullable = false, length = 1)
+    @Column(name = "ISCOMPANY", nullable = false, columnDefinition = "CHAR(1)")
     private String isCompany;
 
     @Column(name = "DEFSHIP", nullable = false)
@@ -42,26 +42,26 @@ public class UserInfo {
     @Column(name = "DEFBILL", nullable = false)
     private Long defBill;
 
-    @Column(name = "USERTYPE", length = 1)
+    @Column(name = "USERTYPE", columnDefinition = "CHAR(1)")
     private String userType;
 
-    @Column(name = "DELFLAG", nullable = false, length = 1)
+    @Column(name = "DELFLAG", nullable = false, columnDefinition = "CHAR(1)")
     private String delFlag;
 
     @Column(name = "INSERTDATE", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date insertDate;
 
-    @Column(name = "SMS_YN", nullable = false, length = 1)
+    @Column(name = "SMS_YN", nullable = false, columnDefinition = "CHAR(1)")
     private String smsYn;
 
-    @Column(name = "EMAIL_YN", nullable = false, length = 1)
+    @Column(name = "EMAIL_YN", nullable = false, columnDefinition = "CHAR(1)")
     private String emailYn;
 
-    @Column(name = "AGREE_YN", nullable = false, length = 1)
+    @Column(name = "AGREE_YN", nullable = false, columnDefinition = "CHAR(1)")
     private String agreeYn;
 
-    @Column(name = "TERMS_YN", length = 1)
+    @Column(name = "TERMS_YN", columnDefinition = "CHAR(1)")
     private String termsYn;
 
     @Column(name = "PASSWORD_UPDATEDON", nullable = false)

@@ -1,4 +1,4 @@
-package com.smsoft.greenmromobile.security;
+package com.smsoft.greenmromobile.global.security;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

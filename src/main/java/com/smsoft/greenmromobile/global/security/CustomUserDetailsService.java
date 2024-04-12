@@ -1,4 +1,4 @@
-package com.smsoft.greenmromobile.security;
+package com.smsoft.greenmromobile.global.security;
 
 import com.smsoft.greenmromobile.domain.user.entity.UserInfo;
 import com.smsoft.greenmromobile.domain.user.repository.UserInfoRepository;

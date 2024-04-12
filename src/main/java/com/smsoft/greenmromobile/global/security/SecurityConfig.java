@@ -1,4 +1,4 @@
-package com.smsoft.greenmromobile.security;
+package com.smsoft.greenmromobile.global.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +22,6 @@ public class SecurityConfig {
                     .loginPage("/")
                     .loginProcessingUrl("/login")
                     .defaultSuccessUrl("/main", true)
-                    .failureUrl("/login?error")
                     .permitAll()
             )
             .logout(logout -> logout
