@@ -1,67 +1,86 @@
 package com.smsoft.greenmromobile.domain.user.controller;
 
-import com.smsoft.greenmromobile.domain.user.entity.UserInfo;
-import com.smsoft.greenmromobile.domain.user.service.AuthenticationService;
+import com.smsoft.greenmromobile.security.CustomAuthenticationProvider;
+import com.smsoft.greenmromobile.security.CustomUserDetailsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
+import java.util.HashSet;
 
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.anyString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.logout;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest
+@SpringBootTest
+@AutoConfigureMockMvc
 class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private AuthenticationService authenticationService;
+    private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private CustomAuthenticationProvider authenticationProvider;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @DisplayName("로그인 성공시 메인페이지 이동")
     @Test
     void loginSuccess_RedirectToMain() throws Exception {
-        UserInfo mockUserInfo = UserInfo.builder()
-                .userId("test")
-                .password("test")
-                .build();
+        String username = "test";
+        String password = "test";
 
-        given(authenticationService.login(anyString(), anyString())).willReturn(Optional.of(mockUserInfo));
+        // 모의 사용자 데이터 생성
+        UserDetails userDetails = new User(username, password, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+
+        // 사용자 서비스가 모의로 반환할 결과 설정
+        Mockito.when(customUserDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
+
+        // 인증 테스트 수행
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
+        Authentication authenticated = authenticationProvider.authenticate(authentication);
+
+        assertThat(authenticated).isNotNull();
+        assertThat(authenticated.getName()).isEqualTo(username);
+        assertThat(authenticated.getCredentials()).isNull();
+        assertThat(new HashSet<>(authenticated.getAuthorities())).isEqualTo(new HashSet<>(userDetails.getAuthorities()));
 
         mockMvc.perform(post("/login")
-                .param("userId", "test")
-                .param("password", "test"))
+                        .with(csrf())
+                        .param("username", username)
+                        .param("password", password))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/main"));
-
     }
 
-    @DisplayName("로그인 실패 테스트")
-    public void loginFailureTest() throws Exception {
-        given(authenticationService.login(anyString(), anyString())).willReturn(Optional.empty());
-
-        mockMvc.perform(post("/login")
-                .param("userId", "test")
-                .param("password", "test"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("messageLine1", "messageLine2"))
-                .andExpect(view().name("index"));
+    @DisplayName("로그아웃 후 로그인 페이지로 리다이렉션")
+    @Test
+    @WithMockUser
+    void logout_RedirectToLoginPage() throws Exception {
+        mockMvc.perform(logout())
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/")); // 로그아웃 후 리다이렉션되는 URL을 확인
     }
-
-    @DisplayName("로그아웃 테스트")
-    public void logoutTest() throws Exception {
-        mockMvc.perform(post("/logout")
-                .sessionAttr("authenticated", true))
-                .andExpect(redirectedUrl("/"));
-    }
-
-
 }

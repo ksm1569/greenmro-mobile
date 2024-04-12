@@ -1,10 +1,9 @@
-package com.smsoft.greenmromobile.domain.user.service;
+package com.smsoft.greenmromobile.security;
 
 import com.smsoft.greenmromobile.domain.user.entity.UserInfo;
 import com.smsoft.greenmromobile.domain.user.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +14,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
     private final UserInfoRepository userInfoRepository;
 
     @Override
@@ -23,10 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found : " + username));
 
         String authority = user.getUserType().equals("1") ? "ROLE_ADMIN" : "ROLE_USER";
-        return User.builder()
-                .username(user.getUserId())
-                .password(user.getPassword())
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority(authority)))
-                .build();
+        String userKey = user.getUserRelation() != null ? user.getUserRelation().getUserKey() : null;
+
+        return new CustomUserDetails(user.getUserId(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(authority)), userKey);
     }
 }
