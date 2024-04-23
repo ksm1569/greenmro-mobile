@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'omyu_pretty';
+    src: url('/css/common/font/omyu_pretty.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

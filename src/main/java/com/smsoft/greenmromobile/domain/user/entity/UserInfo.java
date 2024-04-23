@@ -86,6 +86,4 @@ public class UserInfo {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_RELATION_SEQ", referencedColumnName = "USER_RELATION_SEQ", insertable = false, updatable = false)
     private UserRelation userRelation;
-
-
 }

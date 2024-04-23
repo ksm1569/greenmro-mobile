@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/order/orderList.css}">
+</head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<div class="container mt-3">
+    <h2 class="text-center">주문목록</h2>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="상품명 검색" aria-label="상품명 검색" aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" type="button" id="button-addon2">검색</button>
+    </div>
+
+    <div id="order-contents">
+    </div>
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+</body>
+</html>
