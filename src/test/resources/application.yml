@@ -13,3 +13,8 @@ spring:
         dialect: org.hibernate.dialect.OracleDialect
 server:
   port: 9090
+
+jwt:
+  secret: ENC(kEBk9+I1YmiZxQFY8QZ+2AY02UqI2TKuOqU/LyBaE0ydzNEU2yFGuydClxRQtZL8ExcvlFvZw/azXqCXY34ebTsUv+1op2ti)
+  expiration: 10800 # 3시간 (3*60*60)
+  refreshTokenExpiration: 604800 # 1주일

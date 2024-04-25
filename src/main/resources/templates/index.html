@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>MRO Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <script th:src="@{/js/jquery.min.js}"></script>
     <style>
         body {
             background-color: #f5f5f5;
@@ -28,20 +30,18 @@
         }
         .card {
             border: transparent;
-            background-color: #f5f5f5
+            background-color: #f5f5f5;
         }
         .form-control {
             border: transparent;
             background-color: #fff;
         }
-
         .login-title {
-            text-end: right;
-            font-weight: bold; /* Make text bold */
+            text-align: center;
+            font-weight: bold;
             margin-bottom: 20px;
             margin-left: 20px;
         }
-
         .btn-disabled {
             background-color: #ccc;
             border-color: #ccc;
@@ -63,24 +63,19 @@
             <h2 class="login-title text-left mb-2">로그인</h2>
             <div class="card">
                 <div class="card-body">
-                    <div th:if="${param.error}" class="alert alert-danger" role="alert">
-                        아이디 또는 비밀번호가 잘못되었습니다.
-                    </div>
-
-                    <form th:action="@{/login}" method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
+                    <div id="error" class="alert alert-danger" role="alert" style="display:none;"></div>
+                    <form id="loginForm">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="userId" name="username" placeholder="아이디" ondblclick="this.select()">
-                            <label for="userid" class="form-floating-label">아이디</label>
+                            <input type="text" class="form-control" id="username" placeholder="아이디" ondblclick="this.select()">
+                            <label for="username" class="form-floating-label">아이디</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호" ondblclick="this.select()">
+                            <input type="password" class="form-control" id="password" placeholder="비밀번호" ondblclick="this.select()">
                             <label for="password" class="form-floating-label">비밀번호</label>
                             <i class="fas fa-eye password-icon" id="togglePassword"></i>
                         </div>
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success" id="loginButton" disabled>로그인</button>
+                            <button type="button" class="btn btn-success" id="loginButton">로그인</button>
                         </div>
                     </form>
                 </div>
@@ -93,9 +88,9 @@
 <script>
     $(document).ready(function() {
         $('#togglePassword').click(function() {
-            let passwordField = $('#password');
-            let passwordFieldType = passwordField.attr('type');
-            if(passwordFieldType === 'password') {
+            var passwordField = $('#password');
+            var passwordFieldType = passwordField.attr('type');
+            if (passwordFieldType === 'password') {
                 passwordField.attr('type', 'text');
                 $(this).addClass('fa-eye-slash').removeClass('fa-eye');
             } else {
@@ -103,21 +98,36 @@
                 $(this).removeClass('fa-eye-slash').addClass('fa-eye');
             }
         });
-        function updateButtonState() {
-            let isUserIdFilled = $("#userId").val().length > 0;
-            let isPasswordFilled = $("#password").val().length > 0;
 
-            $("#loginButton").prop("disabled", !(isUserIdFilled && isPasswordFilled));
-            if(!(isUserIdFilled && isPasswordFilled)) {
-                $("#loginButton").addClass("btn-disabled");
-            } else {
-                $("#loginButton").removeClass("btn-disabled");
-            }
-        }
+        $('#loginButton').click(function() {
+            var formData = JSON.stringify({
+                username: $('#username').val(),
+                password: $('#password').val()
+            });
 
-        $("#userId, #password").on("input", updateButtonState);
+            $.ajax({
+                url: '/login',
+                type: 'POST',
+                contentType: 'application/json',
+                data: formData,
+                success: function(data, status, xhr) {
+                    let token = data.accessToken;
+                    console.log(token);
+
+                    if (token) {
+                        window.location.href = '/main';
+                    } else {
+                        alert('로그인 토큰을 받지 못했습니다.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#error').text('아이디 또는 비밀번호가 부정확합니다').show();
+                }
+            });
+        });
     });
 </script>
+
 
 </body>
 </html>

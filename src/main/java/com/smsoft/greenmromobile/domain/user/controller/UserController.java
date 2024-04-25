@@ -3,11 +3,13 @@ package com.smsoft.greenmromobile.domain.user.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class UserController {
@@ -17,7 +19,7 @@ public class UserController {
     }
 
     @GetMapping("/main")
-    public String mainPage() {
+    public String mainPage(Authentication authentication) {
         return "user/main";
     }
 

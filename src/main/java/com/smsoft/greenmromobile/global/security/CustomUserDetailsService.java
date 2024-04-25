@@ -24,7 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         String authority = user.getUserType().equals("1") ? "ROLE_ADMIN" : "ROLE_USER";
         String userKey = user.getUserRelation() != null ? user.getUserRelation().getUserKey() : null;
+        Long urefItem = user.getUrefItem();
 
-        return new CustomUserDetails(user.getUserId(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(authority)), userKey);
+        return new CustomUserDetails(user.getUserId(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(authority)), userKey, urefItem);
     }
 }
