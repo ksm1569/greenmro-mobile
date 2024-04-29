@@ -112,7 +112,6 @@
                 data: formData,
                 success: function(data, status, xhr) {
                     let token = data.accessToken;
-                    console.log(token);
 
                     if (token) {
                         window.location.href = '/main';

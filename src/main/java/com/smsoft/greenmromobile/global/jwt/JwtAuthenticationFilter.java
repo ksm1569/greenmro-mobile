@@ -56,14 +56,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setSecure(false); // https 설정 후 true
         accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 1주일 유효
+        accessTokenCookie.setMaxAge(8 * 60 * 60); // 8시간 유효
         response.addCookie(accessTokenCookie);
 
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setSecure(false);
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(28 * 24 * 60 * 60); // 4주 유효
+        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 1주일 유효
         response.addCookie(refreshCookie);
 
         response.setContentType("application/json");
