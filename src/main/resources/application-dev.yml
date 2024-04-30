@@ -1,11 +1,10 @@
 spring:
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:ORCL
-    username: GREENMRO
-    password: GREENMRO
+    url: ENC(v+xr9TqxPPErgSQltdTkAVFQVOhFyVroqMiwSy4hXclxs723ir/RjCBzNYD00XNAhXWZ4YDDDpM=)
+    username: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
+    password: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: validate
     properties:
@@ -17,9 +16,5 @@ server:
 
 jwt:
   secret: ENC(kEBk9+I1YmiZxQFY8QZ+2AY02UqI2TKuOqU/LyBaE0ydzNEU2yFGuydClxRQtZL8ExcvlFvZw/azXqCXY34ebTsUv+1op2ti)
-  expiration: 10800 # 3시간 (3*60*60)
-  refreshTokenExpiration: 604800 # 1주일
-
-logging:
-  level:
-    root: info
+  expiration: 28800 # 8시간 (8*60*60)
+  refreshTokenExpiration: 604800 # 1주일 (7*24*60*60)

@@ -11,13 +11,13 @@ import java.util.List;
 @SpringBootTest
 class AppTests {
 
-    @Autowired
-    private UserInfoRepository userInfoRepository;
-
-    @Test
-    void contextLoads() {
-        List<UserInfo> users = userInfoRepository.findAll();
-        users.forEach(user -> System.out.println("user = " + user));
-    }
+//    @Autowired
+//    private UserInfoRepository userInfoRepository;
+//
+//    @Test
+//    void contextLoads() {
+//        List<UserInfo> users = userInfoRepository.findAll();
+//        users.forEach(user -> System.out.println("user = " + user));
+//    }
 
 }

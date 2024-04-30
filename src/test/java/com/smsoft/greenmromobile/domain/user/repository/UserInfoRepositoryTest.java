@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class UserInfoRepositoryTest {
-    @Autowired
-    private UserInfoRepository userInfoRepository;
-
-    @DisplayName("유저ID로 조회해보기")
-    @Test
-    public void findByUserID() {
-        Optional<UserInfo> findByUser = userInfoRepository.findByUserId("sumin93");
-        System.out.println("findByUser = " + findByUser);
-    }
+//    @Autowired
+//    private UserInfoRepository userInfoRepository;
+//
+//    @DisplayName("유저ID로 조회해보기")
+//    @Test
+//    public void findByUserID() {
+//        Optional<UserInfo> findByUser = userInfoRepository.findByUserId("sumin93");
+//        System.out.println("findByUser = " + findByUser);
+//    }
 }

@@ -1,9 +1,12 @@
 package com.smsoft.greenmromobile.domain.order.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @ToString
 @Builder
@@ -20,9 +23,8 @@ public class SalesOrder {
     @Column(name = "SONUMBER", nullable = false)
     private String soNumber;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "SODATE", nullable = false)
-    private Date soDate;
+    private LocalDateTime soDate;
 
     @Column(name = "OSTATUS", nullable = false)
     private Integer oStatus;

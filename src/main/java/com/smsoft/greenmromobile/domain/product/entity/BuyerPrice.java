@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @ToString
 @Builder
@@ -43,16 +43,14 @@ public class BuyerPrice {
     @Column(name = "ADDEDBY")
     private Long addedBy;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "ADDEDON", nullable = false)
-    private Date addedOn;
+    private LocalDateTime addedOn;
 
     @Column(name = "UPDATEDBY")
     private Long updatedBy;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "UPDATEDON")
-    private Date updatedOn;
+    private LocalDateTime updatedOn;
 
     @Column(name = "ISINTERFACE")
     private Character isInterface;
@@ -99,7 +97,6 @@ public class BuyerPrice {
     @Column(name = "POINT_YN", columnDefinition = "CHAR(1) default 'N'")
     private Character pointYn;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "DEPOTUPDATEDATE")
-    private Date depotUpdateDate;
+    private LocalDateTime depotUpdateDate;
 }

@@ -10,7 +10,7 @@ class jasyptConfigTest {
     @Test
     @DisplayName("패스워드를 jasypt로 암호화")
     public void jasyptEncryptorPassword() {
-        String key = "";
+        String key = "123";
 
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setPoolSize(8);   // 코어 수

@@ -1,10 +1,13 @@
 package com.smsoft.greenmromobile.domain.product.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @ToString
 @Builder
@@ -24,9 +27,8 @@ public class Product {
     @Column(name = "PADDEDBY")
     private Long paddedBy;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "PADDEDON", nullable = false)
-    private Date paddedOn;
+    private LocalDateTime paddedOn;
 
     @Column(name = "PMANUFACTURER")
     private String manufacturer;
@@ -85,9 +87,8 @@ public class Product {
     @Column(name = "UPDATEDBY")
     private Long updatedBy;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "UPDATEDON")
-    private Date updatedOn;
+    private LocalDateTime updatedOn;
 
     @Column(name = "PMANUFACTUREID")
     private Long manufactureId;

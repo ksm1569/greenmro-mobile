@@ -15,10 +15,72 @@
     </div>
 
     <div id="order-contents">
+
     </div>
 </div>
 
 <div th:replace="~{layout/footer :: footer}"></div>
 <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+<script>
+    $(document).ready(function() {
+        var page = 0;
+        var size = 8; // 초기 로드 시 로드할 항목 수
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function loadMoreData() {
+            $.ajax({
+                url: '/api/order/orderList',
+                type: 'GET',
+                data: {
+                    page: page,
+                    size: size
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (!$.isEmptyObject(data)) {
+                        // 데이터를 HTML로 변환하고 페이지에 추가
+                        $.each(data, function(date, orders) {
+                            var group = $('<div class="order-group"></div>');
+                            $('<h3></h3>').text(date).appendTo(group);
+                            $.each(orders, function(index, order) {
+                                var item = $('<div class="order-item"></div>');
+                                var imageUrl = order.bigImage ? order.bigImage : '/images/noimage.gif'; // 기본 이미지 설정
+                                $('<div class="product-image" style="background-image: url(' + imageUrl + ')"></div>').appendTo(item);
+                                var details = $('<div class="order-details"></div>').appendTo(item);
+                                $('<h5></h5>').text(order.pname).appendTo(details);
+                                $('<p></p>').text(order.pDescription || '-').appendTo(details);
+                                var totalAmount = order.salesSplAmt + order.salesTaxAmt; // 금액 계산
+                                $('<span></span>').text(formatNumber(Math.round(totalAmount)) + '원 /').appendTo(details);
+                                $('<span></span>').text(order.oqty + '개').appendTo(details);
+                                if (order.delFlag === 'Y') {
+                                    $('<p class="text-danger"></p>').text('주문 취소됨').appendTo(details);
+                                }
+                                item.appendTo(group);
+                            });
+                            group.appendTo('#order-contents');
+                        });
+                        page++; // 페이지 번호 증가
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('데이터 로드 실패:', error);
+                }
+            });
+        }
+
+        // 무한 스크롤 구현
+        $(window).scroll(function() {
+            if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+                loadMoreData(); // 페이지 끝에 도달하면 추가 데이터 로드
+            }
+        });
+
+        loadMoreData(); // 초기 데이터 로드
+    });
+</script>
+
 </body>
 </html>

@@ -5,8 +5,9 @@ import com.smsoft.greenmromobile.domain.product.entity.Product;
 import com.smsoft.greenmromobile.domain.user.entity.UserRelation;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @ToString
 @Builder
@@ -52,9 +53,8 @@ public class OrderItems {
     @Column(name = "OSUBSTATUS", nullable = false)
     private Integer osubStatus;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "OTOBERECEIVED")
-    private Date otoBeReceived;
+    private LocalDateTime otoBeReceived;
 
     @Column(name = "IUNITOFPRICE")
     private String iunitOfPrice;
@@ -136,9 +136,9 @@ public class OrderItems {
     @Column(name = "RECVE")
     private String recve;
 
-    @Temporal(TemporalType.DATE)
+
     @Column(name = "RETURN_CREATE")
-    private Date returnCreate;
+    private LocalDateTime returnCreate;
 
     @Column(name = "TAX_YN", columnDefinition = "CHAR(1) default 'Y'")
     private String taxYn;
@@ -146,9 +146,9 @@ public class OrderItems {
     @Column(name = "FILENAME")
     private String filename;
 
-    @Temporal(TemporalType.DATE)
+
     @Column(name = "UPDATEDON")
-    private Date updatedOn;
+    private LocalDateTime updatedOn;
 
     @Column(name = "TAXDISPLAY" ,columnDefinition = "CHAR(1)")
     private String taxDisplay;

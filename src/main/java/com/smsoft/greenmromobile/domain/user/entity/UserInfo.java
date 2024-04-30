@@ -3,7 +3,7 @@ package com.smsoft.greenmromobile.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @ToString
 @Builder
@@ -49,8 +49,7 @@ public class UserInfo {
     private String delFlag;
 
     @Column(name = "INSERTDATE", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date insertDate;
+    private LocalDateTime insertDate;
 
     @Column(name = "SMS_YN", nullable = false, columnDefinition = "CHAR(1)")
     private String smsYn;
@@ -65,8 +64,7 @@ public class UserInfo {
     private String termsYn;
 
     @Column(name = "PASSWORD_UPDATEDON", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date passwordUpdatedOn;
+    private LocalDateTime passwordUpdatedOn;
 
     @Column(name = "USERNO_S")
     private Long userNoS;
