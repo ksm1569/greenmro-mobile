@@ -1,7 +1,11 @@
 package com.smsoft.greenmromobile.domain.order.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.SimpleExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.sql.SQLExpressions;
 import com.smsoft.greenmromobile.domain.order.dto.OrderSummaryDto;
 import com.smsoft.greenmromobile.domain.order.entity.QOrderItems;
 import com.smsoft.greenmromobile.domain.order.entity.QSalesOrder;
@@ -23,6 +27,13 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
         QSalesOrder salesOrder = QSalesOrder.salesOrder;
         QProduct product = QProduct.product;
 
+        SimpleExpression<Long> rowNum = SQLExpressions.rowNumber()
+                .over()
+                .orderBy(orderItems.orefItem.asc())
+                .as("rowNum");
+
+        QOrderItems orderItemsSub = new QOrderItems("orderItemsSub");
+
         return queryFactory
                 .select(Projections.constructor(
                         OrderSummaryDto.class,
@@ -42,7 +53,15 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
                 .from(orderItems)
                 .leftJoin(salesOrder).on(orderItems.salesOrder.sorefItem.eq(salesOrder.sorefItem))
                 .leftJoin(product).on(orderItems.product.prefItem.eq(product.prefItem))
-                .where(orderItems.ownerUserId.eq(userId))
+                .where(orderItems.ownerUserId.eq(userId),
+                        orderItems.orefItem.in(
+                                JPAExpressions.select(orderItemsSub.orefItem)
+                                        .from(orderItemsSub)
+                                        .where(orderItemsSub.ownerUserId.eq(userId))
+                                        .offset(pageable.getOffset())
+                                        .limit(pageable.getPageSize())
+                        )
+                )
 //                .offset(pageable.getOffset())
 //                .limit(pageable.getPageSize())
                 .fetch();
