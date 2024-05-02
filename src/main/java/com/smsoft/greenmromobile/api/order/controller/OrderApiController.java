@@ -22,7 +22,7 @@ public class OrderApiController {
     public ResponseEntity<Map<LocalDate, List<OrderSummaryDto>>> getOrderList(
             @CookieValue(name = "accessToken", required = false) String token,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size
+            @RequestParam(defaultValue = "4") int size
     ) {
         Long urefItem = jwtUtil.getUrefItemFromToken(token);
         Map<LocalDate, List<OrderSummaryDto>> groupedOrders = orderService.groupOrdersByDate(urefItem, page, size);

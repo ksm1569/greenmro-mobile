@@ -1,11 +1,7 @@
 package com.smsoft.greenmromobile.domain.order.repository;
 
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.core.types.dsl.SimpleExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.sql.SQLExpressions;
 import com.smsoft.greenmromobile.domain.order.dto.OrderSummaryDto;
 import com.smsoft.greenmromobile.domain.order.entity.QOrderItems;
 import com.smsoft.greenmromobile.domain.order.entity.QSalesOrder;
@@ -26,14 +22,22 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
         QOrderItems orderItems = QOrderItems.orderItems;
         QSalesOrder salesOrder = QSalesOrder.salesOrder;
         QProduct product = QProduct.product;
+        
+        List<Long> ids = queryFactory
+                .select(orderItems.orefItem)
+                .from(orderItems)
+                .leftJoin(salesOrder).on(orderItems.salesOrder.sorefItem.eq(salesOrder.sorefItem))
+                .where(orderItems.ownerUserId.eq(userId))
+                .orderBy(salesOrder.soDate.desc())
+                .fetch();
 
-        SimpleExpression<Long> rowNum = SQLExpressions.rowNumber()
-                .over()
-                .orderBy(orderItems.orefItem.asc())
-                .as("rowNum");
+        // 오라클 11g 별도 페이징
+        List<Long> paginatedIds = ids.stream()
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .toList();
 
-        QOrderItems orderItemsSub = new QOrderItems("orderItemsSub");
-
+        // 최종 쿼리 실행
         return queryFactory
                 .select(Projections.constructor(
                         OrderSummaryDto.class,
@@ -51,19 +55,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
                         orderItems.delFlag
                 ))
                 .from(orderItems)
-                .leftJoin(salesOrder).on(orderItems.salesOrder.sorefItem.eq(salesOrder.sorefItem))
-                .leftJoin(product).on(orderItems.product.prefItem.eq(product.prefItem))
-                .where(orderItems.ownerUserId.eq(userId),
-                        orderItems.orefItem.in(
-                                JPAExpressions.select(orderItemsSub.orefItem)
-                                        .from(orderItemsSub)
-                                        .where(orderItemsSub.ownerUserId.eq(userId))
-                                        .offset(pageable.getOffset())
-                                        .limit(pageable.getPageSize())
-                        )
-                )
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
+                .where(orderItems.orefItem.in(paginatedIds))
                 .fetch();
     }
 }

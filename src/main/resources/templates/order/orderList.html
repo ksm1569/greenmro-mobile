@@ -23,14 +23,20 @@
 <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
 <script>
     $(document).ready(function() {
-        var page = 0;
-        var size = 8; // 초기 로드 시 로드할 항목 수
+        let page = 0;
+        let size = 4;
+        let isLoading = false;
+        let isLastPage = false;
 
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         function loadMoreData() {
+            if (isLastPage) return;
+            if (isLoading) return;
+            isLoading = true;
+
             $.ajax({
                 url: '/api/order/orderList',
                 type: 'GET',
@@ -63,7 +69,11 @@
                             group.appendTo('#order-contents');
                         });
                         page++; // 페이지 번호 증가
+                    } else {
+                        isLastPage = true; // 데이터가 없으면 더 이상 로드하지 않음
+                        return;
                     }
+                    isLoading = false;
                 },
                 error: function(xhr, status, error) {
                     console.error('데이터 로드 실패:', error);

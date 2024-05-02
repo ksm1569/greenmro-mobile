@@ -10,6 +10,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.OracleDialect
+        default_batch_fetch_size: 500
 
 server:
   port: 9090
