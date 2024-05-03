@@ -1,2 +1,23 @@
-![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/67c9ebb9-b16d-4c56-8615-c06bbc4840f1)
+### 의존성
+- Java 17
+- Spring Boot 3.2.4 - Spring 6.1.5
+- Spring Data Jpa 3.2.4 - hibernate 6.4.4
+- Querydsl 5.0.0
+- Spring Security 6.2.3
+- Thymeleaf 3.2.4
+- BootStrap 5.1.3
+- jquery 3.6.0
+- Vanillajs-Datepicker 1.3.4
+- Json 20240205
+- Jwt 0.11.5
+- Lombok
+- Oracle Database 11g
+
+</br>
+
+### 이미지 샘플
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/6f519484-8528-4ac8-a996-d577b39b4ec1)
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/fcd59fcf-7654-4996-8876-4121d82d9b4d)
+
+
 
