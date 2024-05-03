@@ -1,10 +1,11 @@
 package com.smsoft.greenmromobile.domain.order.repository;
 
-import com.smsoft.greenmromobile.domain.order.dto.OrderSummaryDto;
+import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
+import com.smsoft.greenmromobile.domain.order.dto.OrderListResponseDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface OrderCustomRepository {
-    List<OrderSummaryDto> findOrderSummariesByUserId(Long userId, Pageable pageable);
+    List<OrderListResponseDto> findOrderSummariesByUserId(Long userId, OrderListRequestDto orderListRequestDto, Pageable pageable);
 }

@@ -27,6 +27,7 @@ body {
 .order-details {
     flex-grow: 1;
     padding-left: 20px;
+    overflow: hidden;
 }
 .no-image {
     background: #f0f0f0;
@@ -35,4 +36,17 @@ body {
 
 #order-contents {
     margin-bottom: 100px;
+}
+
+.product-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 넘친 텍스트를 '...'로 표시 */
+    max-width: calc(100% - 10px);
+}
+
+@media (min-width: 768px) {
+    .product-name {
+        max-width: none; /* 넓은 화면에서는 너비 제한 없애기 */
+    }
 }

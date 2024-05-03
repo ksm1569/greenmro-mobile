@@ -1,6 +1,7 @@
 package com.smsoft.greenmromobile.domain.order.service;
 
-import com.smsoft.greenmromobile.domain.order.dto.OrderSummaryDto;
+import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
+import com.smsoft.greenmromobile.domain.order.dto.OrderListResponseDto;
 import com.smsoft.greenmromobile.domain.order.repository.OrderCustomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -19,15 +20,15 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderCustomRepository orderCustomRepository;
 
-    public Map<LocalDate, List<OrderSummaryDto>> groupOrdersByDate(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Map<LocalDate, List<OrderListResponseDto>> groupOrdersByDate(Long userId, OrderListRequestDto orderListRequestDto) {
+        Pageable pageable = PageRequest.of(orderListRequestDto.page(), orderListRequestDto.size() + 2);
 
-        List<OrderSummaryDto> orders = orderCustomRepository.findOrderSummariesByUserId(userId, pageable);
-        List<OrderSummaryDto> modifiedOrders = orders.stream()
-                .map(order -> new OrderSummaryDto(
+        List<OrderListResponseDto> orders = orderCustomRepository.findOrderSummariesByUserId(userId, orderListRequestDto, pageable);
+        List<OrderListResponseDto> modifiedOrders = orders.stream()
+                .map(order -> new OrderListResponseDto(
                         order.soDate(),
                         order.soRefItem(),
-                        order.bigImage() != null ? "https://shop.greenproduct.co.kr" + order.bigImage() : null,
+                        formatImageUrl(order.bigImage()),
                         order.prefItem(),
                         order.pname(),
                         order.pDescription(),
@@ -42,17 +43,16 @@ public class OrderService {
 
         return modifiedOrders.stream()
                 .collect(Collectors.groupingBy(
-                        order -> order.soDate().toLocalDate(),
-                        () -> new TreeMap<LocalDate, List<OrderSummaryDto>>(Comparator.reverseOrder()),
+                        OrderListResponseDto::getOrderDate,
+                        () -> new TreeMap<LocalDate, List<OrderListResponseDto>>(Comparator.reverseOrder()),
                         Collectors.toList()
                 ));
+    }
 
-// 추후 이미지서버 이전시 주석해제후 적용
-//        return orderCustomRepository.findOrderSummariesByUserId(userId)
-//                .stream()
-//                .collect(Collectors.groupingBy(orders -> orders.soDate().toLocalDate(),
-//                        () -> new TreeMap<LocalDate, List<OrderSummaryDto>>(Comparator.reverseOrder()),
-//                        Collectors.toList()
-//                ));
+    private String formatImageUrl(String imageUrl) {
+        if (imageUrl != null && !imageUrl.contains("https://")) {
+            return "https://shop.greenproduct.co.kr" + imageUrl;
+        }
+        return imageUrl;
     }
 }

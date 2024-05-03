@@ -3,15 +3,31 @@
 <head>
     <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
     <link rel="stylesheet" th:href="@{/css/order/orderList.css}">
+    <link rel="stylesheet" th:href="@{/css/common/vanilla/datepicker-bs5.min.css}">
 </head>
 <body>
 <div th:replace="~{layout/header :: header}"></div>
 
 <div class="container mt-3">
-    <h2 class="text-center">주문목록</h2>
+    <h2 class="text-center mb-3">주문목록</h2>
+
+    <div class="row mb-2">
+        <div class="col">
+            <input type="text" class="form-control" id="startDate" placeholder="조회 시작일">
+        </div>
+
+        <div class="col-1 d-flex align-items-center justify-content-center">
+            <span>~</span>
+        </div>
+
+        <div class="col">
+            <input type="text" class="form-control" id="endDate" placeholder="조회 종료일">
+        </div>
+    </div>
+
     <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="상품명 검색" aria-label="상품명 검색" aria-describedby="button-addon2">
-        <button class="btn btn-outline-secondary" type="button" id="button-addon2">검색</button>
+        <input type="text" id="productName" name="productname" class="form-control" placeholder="상품명 검색" aria-label="상품명 검색" aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" type="button" id="btn_search">검색</button>
     </div>
 
     <div id="order-contents">
@@ -21,57 +37,75 @@
 
 <div th:replace="~{layout/footer :: footer}"></div>
 <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+<script src="/js/common/datepicker.min.js"></script>
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        initDatePicker();
+
         let page = 0;
         let size = 4;
         let isLoading = false;
         let isLastPage = false;
+        let lastGroupDate = null;
+
+        function initDatePicker() {
+            const today = new Date();
+            const sixMonthsAgo = new Date(today.setMonth(today.getMonth() - 6));
+
+            const startDatePicker = new Datepicker(document.getElementById('startDate'), {
+                format: 'yyyy-mm-dd',
+                autohide: true
+            });
+            const endDatePicker = new Datepicker(document.getElementById('endDate'), {
+                format: 'yyyy-mm-dd', // 날짜 형식 설정
+                autohide: true // 선택 후 자동으로 닫힘
+            });
+
+            startDatePicker.setDate(sixMonthsAgo);
+            endDatePicker.setDate(new Date());
+        }
 
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         function loadMoreData() {
-            if (isLastPage) return;
-            if (isLoading) return;
+            if (isLastPage || isLoading) return;
             isLoading = true;
+
+            const productName = $('#productName').val();
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
 
             $.ajax({
                 url: '/api/order/orderList',
                 type: 'GET',
                 data: {
+                    productName: productName,
+                    startDate: startDate,
+                    endDate: endDate,
                     page: page,
                     size: size
                 },
                 dataType: 'json',
                 success: function(data) {
                     if (!$.isEmptyObject(data)) {
-                        // 데이터를 HTML로 변환하고 페이지에 추가
+                        let group;
                         $.each(data, function(date, orders) {
-                            var group = $('<div class="order-group"></div>');
-                            $('<h3></h3>').text(date).appendTo(group);
+                            if (lastGroupDate !== date) {
+                                group = $('<div class="order-group"></div>').appendTo('#order-contents');
+                                $('<h3></h3>').text(date).appendTo(group);
+                                lastGroupDate = date;
+                            }
+
                             $.each(orders, function(index, order) {
-                                var item = $('<div class="order-item"></div>');
-                                var imageUrl = order.bigImage ? order.bigImage : '/images/noimage.gif'; // 기본 이미지 설정
-                                $('<div class="product-image" style="background-image: url(' + imageUrl + ')"></div>').appendTo(item);
-                                var details = $('<div class="order-details"></div>').appendTo(item);
-                                $('<h5></h5>').text(order.pname).appendTo(details);
-                                $('<p></p>').text(order.pDescription || '-').appendTo(details);
-                                var totalAmount = order.salesSplAmt + order.salesTaxAmt; // 금액 계산
-                                $('<span></span>').text(formatNumber(Math.round(totalAmount)) + '원 /').appendTo(details);
-                                $('<span></span>').text(order.oqty + '개').appendTo(details);
-                                if (order.delFlag === 'Y') {
-                                    $('<p class="text-danger"></p>').text('주문 취소됨').appendTo(details);
-                                }
-                                item.appendTo(group);
+                                renderOrderItem(order).appendTo(group);
                             });
-                            group.appendTo('#order-contents');
                         });
-                        page++; // 페이지 번호 증가
+
+                        page++;
                     } else {
-                        isLastPage = true; // 데이터가 없으면 더 이상 로드하지 않음
-                        return;
+                        isLastPage = true;
                     }
                     isLoading = false;
                 },
@@ -79,6 +113,43 @@
                     console.error('데이터 로드 실패:', error);
                 }
             });
+        }
+
+        function renderOrderItem(order) {
+            let item = $('<div class="order-item"></div>');
+            let imageUrl = order.bigImage ? order.bigImage : '/images/noimage.gif';
+            $('<div class="product-image" style="background-image: url(' + imageUrl + ')"></div>').appendTo(item);
+            let details = $('<div class="order-details"></div>').appendTo(item);
+            $('<h5></h5>').addClass('product-name').text(order.pname).appendTo(details);
+            $('<p style="margin-bottom: 0.3em;"></p>').text(order.pDescription || '-').appendTo(details);
+            let totalAmount = order.salesSplAmt + order.salesTaxAmt;
+            $('<span></span>').text(formatNumber(Math.round(totalAmount)) + '원 / ').appendTo(details);
+            let qty = $('<span></span>').text(order.oqty + '개').appendTo(details);
+            $('<small></small>').text(' (' + order.prefItem + ')').css('font-size', 'smaller').appendTo(qty);
+            if (order.delFlag === 'Y') {
+                $('<p class="text-danger"></p>').text('주문 취소됨').appendTo(details);
+            }
+            return item;
+        }
+
+        $('#productName').on('keypress', function(e) {
+            if (e.which == 13) {
+                loadMoreData();
+            }
+        });
+
+        $('#btn_search').on('click', function() {
+            $('.order-group').remove();
+            resetLoadingState();
+            loadMoreData();
+        });
+
+        function resetLoadingState() {
+            page = 0;
+            size = 4;
+            isLoading = false;
+            isLastPage = false;
+            lastGroupDate = null;
         }
 
         // 무한 스크롤 구현
