@@ -89,13 +89,12 @@
                 },
                 dataType: 'json',
                 success: function(data) {
-                    if (!$.isEmptyObject(data)) {
-                        let group;
-                        $.each(data, function(date, orders) {
-                            if (lastGroupDate !== date) {
-                                group = $('<div class="order-group"></div>').appendTo('#order-contents');
+                    if (data && !$.isEmptyObject(data.groupedOrders)) {
+                        $.each(data.groupedOrders, function(date, orders) {
+                            let group = $('#order-contents').find(`div.order-group[data-date="${date}"]`);
+                            if (group.length === 0) {
+                                group = $('<div class="order-group"></div>').attr('data-date', date).appendTo('#order-contents');
                                 $('<h3></h3>').text(date).appendTo(group);
-                                lastGroupDate = date;
                             }
 
                             $.each(orders, function(index, order) {

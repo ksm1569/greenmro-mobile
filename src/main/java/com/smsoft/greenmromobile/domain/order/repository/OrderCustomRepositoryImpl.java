@@ -54,6 +54,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
                         OrderListResponseDto.class,
                         salesOrder.soDate,
                         orderItems.salesOrder.sorefItem,
+                        orderItems.orefItem,
                         product.bigImage,
                         product.prefItem,
                         product.pname,
@@ -68,5 +69,32 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository{
                 .from(orderItems)
                 .where(orderItems.orefItem.in(paginatedIds))
                 .fetch();
+    }
+
+    @Override
+    public long countOrdersByUserIdAndFilters(Long userId, OrderListRequestDto orderListRequestDto) {
+        QOrderItems orderItems = QOrderItems.orderItems;
+        QSalesOrder salesOrder = QSalesOrder.salesOrder;
+
+        // 동적 필터 조건 구성
+        BooleanBuilder filter = new BooleanBuilder();
+        if (orderListRequestDto.productName() != null && !orderListRequestDto.productName().isEmpty()) {
+            filter.and(orderItems.product.pname.containsIgnoreCase(orderListRequestDto.productName()));
+        }
+        filter.and(orderItems.salesOrder.soDate.between(
+                orderListRequestDto.startDate().atStartOfDay(), orderListRequestDto.endDate().atTime(LocalTime.MAX)
+        ));
+        filter.and(orderItems.ownerUserId.eq(userId));
+
+        // Count 쿼리 실행
+        Long count = queryFactory
+                .select(orderItems.count())
+                .from(orderItems)
+                .leftJoin(salesOrder).on(orderItems.salesOrder.sorefItem.eq(salesOrder.sorefItem))
+                .where(filter)
+                .fetchOne();
+
+        // null 체크 후 결과 반환
+        return count != null ? count : 0L;
     }
 }

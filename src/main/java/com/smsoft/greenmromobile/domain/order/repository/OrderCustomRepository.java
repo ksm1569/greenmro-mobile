@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface OrderCustomRepository {
     List<OrderListResponseDto> findOrderSummariesByUserId(Long userId, OrderListRequestDto orderListRequestDto, Pageable pageable);
+    long countOrdersByUserIdAndFilters(Long userId, OrderListRequestDto orderListRequestDto);
 }

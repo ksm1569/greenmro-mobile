@@ -2,6 +2,7 @@ package com.smsoft.greenmromobile.domain.order.service;
 
 import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
 import com.smsoft.greenmromobile.domain.order.dto.OrderListResponseDto;
+import com.smsoft.greenmromobile.domain.order.dto.PagedOrderResponse;
 import com.smsoft.greenmromobile.domain.order.repository.OrderCustomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderCustomRepository orderCustomRepository;
 
-    public Map<LocalDate, List<OrderListResponseDto>> groupOrdersByDate(Long userId, OrderListRequestDto orderListRequestDto) {
+    public PagedOrderResponse groupOrdersByDate(Long userId, OrderListRequestDto orderListRequestDto) {
         Pageable pageable = PageRequest.of(orderListRequestDto.page(), orderListRequestDto.size() + 2);
 
         List<OrderListResponseDto> orders = orderCustomRepository.findOrderSummariesByUserId(userId, orderListRequestDto, pageable);
@@ -28,6 +29,7 @@ public class OrderService {
                 .map(order -> new OrderListResponseDto(
                         order.soDate(),
                         order.soRefItem(),
+                        order.orefItem(),
                         formatImageUrl(order.bigImage()),
                         order.prefItem(),
                         order.pname(),
@@ -41,12 +43,18 @@ public class OrderService {
                 ))
                 .toList();
 
-        return modifiedOrders.stream()
+        long totalElements = orderCustomRepository.countOrdersByUserIdAndFilters(userId, orderListRequestDto);
+        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize()) - 1;
+        boolean last = pageable.getPageNumber() >= totalPages - 1;
+
+        Map<LocalDate, List<OrderListResponseDto>> groupedOrders = modifiedOrders.stream()
                 .collect(Collectors.groupingBy(
                         OrderListResponseDto::getOrderDate,
                         () -> new TreeMap<LocalDate, List<OrderListResponseDto>>(Comparator.reverseOrder()),
                         Collectors.toList()
                 ));
+
+        return new PagedOrderResponse(groupedOrders, totalElements, totalPages, last);
     }
 
     private String formatImageUrl(String imageUrl) {

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public record OrderListResponseDto(
         LocalDateTime soDate,          // 주문일자
         String soRefItem,              // 주문번호
+        Long orefItem,
         String bigImage,               // 상품이미지
         Long prefItem,                 // 상품코드
         String pname,                  // 상품명
