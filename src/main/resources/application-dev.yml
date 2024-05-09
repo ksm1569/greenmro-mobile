@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ENC(v+xr9TqxPPErgSQltdTkAVFQVOhFyVroqMiwSy4hXclxs723ir/RjCBzNYD00XNAhXWZ4YDDDpM=)
-    username: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
-    password: ENC(WtX6VEK8Xzf+gWxSZpkjy5Af4+RoB/Z0)
+    url: ENC(9j5kBbMKwH0kUvOEC0cTjaMAU8rSB2XkR0M1/O8ACCCZke2z9xPjmxhzIyNP9bF3)
+    username: ENC(SerSzJon1s5UDLAUZehKzxulCc7MuHyp)
+    password: ENC(SerSzJon1s5UDLAUZehKzxulCc7MuHyp)
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:
@@ -16,6 +16,6 @@ server:
   port: 9090
 
 jwt:
-  secret: ENC(kEBk9+I1YmiZxQFY8QZ+2AY02UqI2TKuOqU/LyBaE0ydzNEU2yFGuydClxRQtZL8ExcvlFvZw/azXqCXY34ebTsUv+1op2ti)
+  secret: ENC(LLLV9Lbw21ApG0uwNH1TjsW9yqKId0koLgEO7bPFsUDjDAkqaiUhnCvGYvGpnVIun6XJldoBzUEMckjIlwIQ3kB+2g8d4Jj/)
   expiration: 28800 # 8시간 (8*60*60)
   refreshTokenExpiration: 604800 # 1주일 (7*24*60*60)
