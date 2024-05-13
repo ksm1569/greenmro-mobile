@@ -58,8 +58,9 @@ public class BuyerPrice {
     @Column(name = "UCOMPANYREF")
     private Long uCompanyRef;
 
-    @Column(name = "VENDORREFITEM")
-    private Long vendorRefItem;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "VENDORREFITEM", referencedColumnName = "VENDORREFITEM")
+    private VendorMasterInfo vendorMasterInfo;
 
     @Column(name = "PRODUCTTYPE")
     private Character productType;
