@@ -2,12 +2,13 @@ package com.smsoft.greenmromobile.domain.order.service;
 
 import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
 import com.smsoft.greenmromobile.domain.order.dto.OrderListResponseDto;
-import com.smsoft.greenmromobile.domain.order.dto.PagedOrderResponse;
+import com.smsoft.greenmromobile.domain.order.dto.PagedOrderResponseDto;
 import com.smsoft.greenmromobile.domain.order.repository.OrderCustomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -21,7 +22,8 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderCustomRepository orderCustomRepository;
 
-    public PagedOrderResponse groupOrdersByDate(Long userId, OrderListRequestDto orderListRequestDto) {
+    @Transactional(readOnly = true)
+    public PagedOrderResponseDto groupOrdersByDate(Long userId, OrderListRequestDto orderListRequestDto) {
         Pageable pageable = PageRequest.of(orderListRequestDto.page(), orderListRequestDto.size() + 2);
 
         List<OrderListResponseDto> orders = orderCustomRepository.findOrderSummariesByUserId(userId, orderListRequestDto, pageable);
@@ -54,7 +56,7 @@ public class OrderService {
                         Collectors.toList()
                 ));
 
-        return new PagedOrderResponse(groupedOrders, totalElements, totalPages, last);
+        return new PagedOrderResponseDto(groupedOrders, totalElements, totalPages, last);
     }
 
     private String formatImageUrl(String imageUrl) {

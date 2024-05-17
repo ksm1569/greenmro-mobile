@@ -11,13 +11,18 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "CARTS")
+@Table(name = "CARTS", indexes = {
+        @Index(name = "IDX_CARTS_UREFITEM_ADDEDON", columnList = "UREFITEM, ADDEDON DESC"),
+        @Index(name = "SYS_C0012752", columnList = "BPLREFITEM, CIREFITEM"),
+        @Index(name = "CARTS_CIREFITEM_IDX", columnList = "CIREFITEM")
+})
 public class Cart {
     @Id
     @Column(name = "CIREFITEM", nullable = false)
@@ -62,7 +67,7 @@ public class Cart {
     private Long addedBy;
 
     @Column(name = "ADDEDON")
-    private LocalDate addedOn;
+    private LocalDateTime addedOn;
 
     @Column(name = "CAREFITEM")
     private Long caRefItem;

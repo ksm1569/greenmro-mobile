@@ -1,5 +1,8 @@
-package com.smsoft.greenmromobile.api.order.controller;
+package com.smsoft.greenmromobile.api.cart;
 
+import com.smsoft.greenmromobile.domain.cart.dto.CartListRequestDto;
+import com.smsoft.greenmromobile.domain.cart.dto.PagedCartResponseDto;
+import com.smsoft.greenmromobile.domain.cart.service.CartService;
 import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
 import com.smsoft.greenmromobile.domain.order.dto.PagedOrderResponseDto;
 import com.smsoft.greenmromobile.domain.order.service.OrderService;
@@ -11,18 +14,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/order")
-public class OrderApiController {
+@RequestMapping("/api/cart")
+public class CartApiController {
     private final JwtUtil jwtUtil;
-    private final OrderService orderService;
+    private final CartService cartService;
 
-    @GetMapping("/orderList")
-    public ResponseEntity<PagedOrderResponseDto> getOrderList(
+    @GetMapping("/cartList")
+    public ResponseEntity<PagedCartResponseDto> getCartList(
             @CookieValue(name = "accessToken", required = true) String token,
-            @Valid @ModelAttribute OrderListRequestDto orderListRequestDto
+            @Valid @ModelAttribute CartListRequestDto cartListRequestDto
     ) {
         Long urefItem = jwtUtil.getUrefItemFromToken(token);
-        PagedOrderResponseDto pagedResponse = orderService.groupOrdersByDate(urefItem, orderListRequestDto);
+        PagedCartResponseDto pagedResponse = cartService.groupByManufacturer(urefItem, cartListRequestDto);
         return ResponseEntity.ok(pagedResponse);
     }
 }
