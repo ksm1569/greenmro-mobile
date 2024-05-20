@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -122,7 +123,11 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
 
         // 제조사별로 그룹화
         Map<String, List<CartListResponseDto>> groupedCartInfo = paginatedResult.stream()
-                .collect(Collectors.groupingBy(CartListResponseDto::manufacturer));
+                .collect(Collectors.groupingBy(
+                        CartListResponseDto::manufacturer,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         // Dto 매핑 및 리턴
         return new PagedCartResponseDto(
