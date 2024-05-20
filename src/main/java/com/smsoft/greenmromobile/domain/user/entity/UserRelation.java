@@ -3,9 +3,7 @@ package com.smsoft.greenmromobile.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.ToString;
 
-@ToString
 @Getter
 @Table(name = "USER_RELATION")
 @Entity

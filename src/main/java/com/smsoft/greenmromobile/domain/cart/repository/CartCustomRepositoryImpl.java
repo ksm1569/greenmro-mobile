@@ -55,8 +55,6 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
                 .where(filter)
                 .fetchOne();
 
-
-
         // 메인쿼리
         List<Tuple> tupleList = queryFactory
                 .select(cart.product.manufactureId,
