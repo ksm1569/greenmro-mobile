@@ -16,16 +16,6 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public PagedCartResponseDto groupByManufacturer(Long userId, CartListRequestDto cartListRequestDto) {
-        Pageable pageable = PageRequest.of(cartListRequestDto.page(), cartListRequestDto.size() + 2);
-
-        return cartCustomRepository.findCartInfoByUserId(userId, cartListRequestDto, pageable);
+        return cartCustomRepository.findCartInfoByUserId(userId, cartListRequestDto);
     }
-
-    private String formatImageUrl(String imageUrl) {
-        if (imageUrl != null && !imageUrl.contains("https://")) {
-            return "https://shop.greenproduct.co.kr" + imageUrl;
-        }
-        return imageUrl;
-    }
-
 }

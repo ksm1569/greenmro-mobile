@@ -21,10 +21,9 @@ class CartCustomRepositoryImplTest {
     @Test
     public void testFindCartInfoByUserId() {
         Long userId = 104760L;
-        CartListRequestDto requestDto = new CartListRequestDto(0, 5);
-        Pageable pageable = PageRequest.of(0, 5);
+        CartListRequestDto requestDto = new CartListRequestDto();
 
-        PagedCartResponseDto result = cartCustomRepository.findCartInfoByUserId(userId, requestDto, pageable);
+        PagedCartResponseDto result = cartCustomRepository.findCartInfoByUserId(userId, requestDto);
 
         System.out.println("result = " + result.toString());
     }

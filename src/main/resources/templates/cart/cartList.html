@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/cart/cartList.css}">
+</head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<div class="container mt-3">
+    <h2 class="text-center mb-3">장바구니</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="select-all">
+            <label class="form-check-label" for="select-all">
+                전체 선택
+            </label>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="btn-delete-selected">선택 삭제</button>
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="btn-delete-sold-out">품절상품 모두삭제</button>
+        </div>
+
+    </div>
+
+    <div id="cart-contents"></div>
+
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadCartData() {
+            $.ajax({
+                url: '/api/cart/cartList',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data);
+                    if (data && !$.isEmptyObject(data.groupedOrders)) {
+                        $.each(data.groupedOrders, function(manufacturer, items) {
+                            let group = $('<div class="cart-group"></div>').appendTo('#cart-contents');
+                            let groupId = 'group-' + items[0].manufactureId;
+                            let groupHeader = $('<div class="group-header"></div>').appendTo(group);
+                            $('<input type="checkbox" class="form-check-input group-select" id="' + groupId + '" >').appendTo(groupHeader);
+                            $('<label for="' + groupId + '"><h4>' + manufacturer + '</h4></label>').appendTo(groupHeader);
+
+                            items.forEach(function(item) {
+                                renderCartItem(item).appendTo(group);
+                            });
+
+                            // 그룹 선택 시 합계금액 갱신
+                            $('#' + groupId).change(function() {
+                                let isChecked = $(this).is(':checked');
+                                let group = $(this).closest('.cart-group');
+                                resetGroupTotal(group);
+                                group.find('.item-select').prop('checked', isChecked);
+                                calculateGroupTotal(group);
+                            });
+
+                            let groupTotal = $('<div class="group-total" style="display:none;"></div>').appendTo(group);
+
+                            // 상품 선택 시 합계금액 갱신
+                            group.find('.item-select').change(function() {
+                                calculateGroupTotal($(this).closest('.cart-group'));
+                            });
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('데이터 로드 실패:', error);
+                }
+            });
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function renderCartItem(item) {
+            let cartItem = $('<div class="cart-item"></div>');
+            let imageUrl = item.bigImage ? item.bigImage : '/images/noimage.gif';
+
+            // 상품명
+            $('<h6></h6>').addClass('product-name').text(item.pname).appendTo(cartItem);
+
+            // 상품 상세정보와 컨트롤을 포함하는 행
+            let detailsRow = $('<div class="product-details-row d-flex align-items-center"></div>').appendTo(cartItem);
+
+            // 이미지
+            $('<div class="product-image" style="background-image: url(' + imageUrl + ');"></div>').appendTo(detailsRow);
+
+            // 상단 컨트롤 행 (체크박스,규격,삭제 버튼)
+            let controls = $('<div class="product-controls d-flex flex-column"></div>').appendTo(detailsRow);
+            let controlsTop = $('<div class="controls-top d-flex justify-content-between align-items-center"></div>').appendTo(controls);
+            let leftControls = $('<div class="left-controls d-flex align-items-center"></div>').appendTo(controlsTop);
+            let checkboxId = 'item-' + item.prefItem; // 체크박스와 라벨
+            $('<input class="form-check-input item-select" type="checkbox" id="' + checkboxId + '" data-price="' + item.bprice + '">').appendTo(leftControls);
+            let descriptionText = item.description.length > 24 ? item.description.substring(0, 24) + '...' : item.description;
+            $('<label class="spec-text" for="' + checkboxId + '"></label>').text(descriptionText).appendTo(leftControls);
+            $('<button class="delete-button btn btn-danger btn-sm">×</button>').appendTo(controlsTop);
+
+            // 하단 컨트롤 행 (수량 조절, 가격 정보)
+            let controlsBottom = $('<div class="controls-bottom d-flex justify-content-between align-items-center"></div>').appendTo(controls);
+            let quantityControl = $('<div class="quantity-control d-flex align-items-center"></div>').appendTo(controlsBottom);
+            $('<button class="btn btn-success btn-sm">-</button>').appendTo(quantityControl);
+            $('<input type="text" class="form-control" min="1" style="width: 40px;" readonly="readonly">').val(item.oQty).appendTo(quantityControl);
+            $('<button class="btn btn-success btn-sm">+</button>').appendTo(quantityControl);
+            $('<div class="price-detail ml-2"></div>').text(formatNumber(item.bprice) + '원').appendTo(controlsBottom);
+
+            return cartItem;
+        }
+
+        function resetGroupTotal(group) {
+            let totalDiv = group.find('.group-total');
+            totalDiv.data('total', 0); // 총합 데이터 초기화
+            totalDiv.html(''); // 내용 비우기
+            totalDiv.hide(); // 숨기기
+        }
+
+        function calculateGroupTotal(group) {
+            resetGroupTotal(group); // 총합 초기화
+            group.find('.item-select:checked').each(function() {
+                let price = parseFloat($(this).data('price'));
+                updateGroupTotal(group, price, true);
+            });
+        }
+
+        function updateGroupTotal(group, price, isChecked) {
+            let totalDiv = group.find('.group-total');
+            let currentTotal = parseFloat(totalDiv.data('total')) || 0;
+            currentTotal += (isChecked ? price : -price);
+            totalDiv.data('total', Math.max(0, currentTotal)); // 음수 방지
+            let formattedTotal = formatNumber(currentTotal);
+            totalDiv.html('<span class="total-text">합계금액 <span class="total-amount">' + formattedTotal + '</span>원</span>');
+            if (currentTotal > 0) {
+                totalDiv.slideDown();
+            } else {
+                totalDiv.slideUp();
+            }
+        }
+
+        $('#btn-delete-selected').on('click', function() {
+            $('.item-select:checked').each(function() {
+                $(this).closest('.cart-item').remove();
+            });
+        });
+
+        $('#select-all').change(function() {
+            let isChecked = $(this).is(':checked');
+            $('.group-select').prop('checked', isChecked);
+            $('.item-select').prop('checked', isChecked);
+            $('.cart-group').each(function() {
+                calculateGroupTotal($(this)); // 전체 그룹의 합계 갱신
+            });
+        });
+
+        loadCartData();
+    });
+</script>
+
+</body>
+</html>

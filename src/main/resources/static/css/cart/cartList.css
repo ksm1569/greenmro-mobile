@@ -1,0 +1,138 @@
+body {
+    background-color: #f5f5f5;
+}
+
+#cart-contents {
+    margin-bottom: 100px;
+}
+
+.cart-group {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+}
+
+.cart-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(204, 204, 204, 0.5);
+}
+
+.spec-text {
+    color: #666; /* 글자 색상 */
+    font-size: 0.8rem; /* 글자 크기 */
+}
+
+.product-details-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* 추가: 요소들이 충분한 공간이 없을 경우 다음 줄로 넘어갈 수 있게 함 */
+    margin-top: 5px;
+}
+
+.product-image {
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    background-position: center;
+    margin-right: 15px;
+}
+
+.product-controls {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.controls-top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.left-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.left-controls .form-check-input {
+    margin-top: 0; /* 체크박스의 상단 마진 제거 또는 조정 */
+    margin-bottom: 0; /* 체크박스의 하단 마진 제거 또는 조정 */
+}
+
+.left-controls .spec-text {
+    line-height: 1.2; /* 텍스트 라인 높이 조정 */
+}
+
+.controls-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.controls-top {
+    margin-bottom: 10px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+}
+
+.quantity-control button {
+    padding: 0.4rem 0.8rem;
+}
+.quantity-control input {
+    padding: 0.3rem 0.8rem;
+}
+
+.quantity-control input {
+    width: 60px; /* 크기 조정 */
+    text-align: center;
+}
+
+.delete-button {
+    margin-left: auto;
+    font-size: 1.5rem;
+    color: red;
+    border: none;
+    background: none;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    align-self: center;
+}
+
+/* 체크박스 기본 스타일 재정의 */
+.form-check-input {
+    accent-color: green;  /* 모던 브라우저에서 체크박스 색상 변경 */
+}
+
+/* 레거시 브라우저를 위한 대체 스타일 */
+.form-check-input:checked {
+    background-color: green;
+    border-color: green;
+}
+
+.group-select {
+    margin-right: 5px;
+}
+
+.group-total {
+    padding: 10px;
+    background-color: #f8f9fa;
+    color: red;
+    font-weight: bold;
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.total-text {
+    color: #000;
+}
+.total-amount {
+    color: red;
+}

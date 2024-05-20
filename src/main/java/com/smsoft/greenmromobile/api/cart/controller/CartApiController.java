@@ -1,11 +1,8 @@
-package com.smsoft.greenmromobile.api.cart;
+package com.smsoft.greenmromobile.api.cart.controller;
 
 import com.smsoft.greenmromobile.domain.cart.dto.CartListRequestDto;
 import com.smsoft.greenmromobile.domain.cart.dto.PagedCartResponseDto;
 import com.smsoft.greenmromobile.domain.cart.service.CartService;
-import com.smsoft.greenmromobile.domain.order.dto.OrderListRequestDto;
-import com.smsoft.greenmromobile.domain.order.dto.PagedOrderResponseDto;
-import com.smsoft.greenmromobile.domain.order.service.OrderService;
 import com.smsoft.greenmromobile.global.jwt.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

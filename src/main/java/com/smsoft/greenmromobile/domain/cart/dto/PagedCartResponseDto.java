@@ -15,6 +15,4 @@ import java.util.Map;
 public class PagedCartResponseDto {
     private Map<String, List<CartListResponseDto>> groupedOrders;
     private long totalElements;
-    private int totalPages;
-    private boolean last;
 }

@@ -30,7 +30,7 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public PagedCartResponseDto findCartInfoByUserId(Long userId, CartListRequestDto cartListRequestDto, Pageable pageable) {
+    public PagedCartResponseDto findCartInfoByUserId(Long userId, CartListRequestDto cartListRequestDto) {
         QCart subCart = new QCart("subCart");
         QProduct subProduct = new QProduct("subProduct");
 
@@ -60,7 +60,11 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
         List<Tuple> tupleList = queryFactory
                 .select(cart.product.manufactureId,
                         cart.product.manufacturer,
+                        cart.buyerPrice.bplRefItem,
+                        cart.ciRefItem,
+                        cart.product.prefItem,
                         cart.product.pname,
+                        cart.product.description,
                         cart.product.bigImage,
                         cart.oQty,
                         cart.buyerPrice.bprice,
@@ -92,16 +96,18 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
                 .fetch();
 
         long totalElements = totalElementsResult != null ? totalElementsResult : 0L;
-        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize()) - 1;
-        boolean last = pageable.getPageNumber() >= totalPages - 1;
 
         // 페이징 처리
         List<CartListResponseDto> paginatedResult = tupleList.stream()
                 .map(tuple -> new CartListResponseDto(
                         tuple.get(cart.product.manufactureId),
                         tuple.get(cart.product.manufacturer),
+                        tuple.get(cart.buyerPrice.bplRefItem),
+                        tuple.get(cart.ciRefItem),
+                        tuple.get(cart.product.prefItem),
                         tuple.get(cart.product.pname),
-                        tuple.get(cart.product.bigImage),
+                        tuple.get(cart.product.description),
+                        formatImageUrl(tuple.get(cart.product.bigImage)),
                         tuple.get(cart.oQty),
                         tuple.get(cart.buyerPrice.bprice),
                         tuple.get(vendorMasterInfo.delChargeYn),
@@ -117,8 +123,6 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
                                 ).groupBy(subProduct.manufactureId)),
                         tuple.get(cart.addedOn)
                 ))
-                .skip(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .toList();
 
         // 제조사별로 그룹화
@@ -132,9 +136,14 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
         // Dto 매핑 및 리턴
         return new PagedCartResponseDto(
                 groupedCartInfo,
-                totalElements,
-                totalPages,
-                last
+                totalElements
         );
+    }
+
+    private String formatImageUrl(String imageUrl) {
+        if (imageUrl != null && !imageUrl.contains("https://")) {
+            return "https://shop.greenproduct.co.kr" + imageUrl;
+        }
+        return imageUrl;
     }
 }

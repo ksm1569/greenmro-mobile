@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
 public record CartListResponseDto(
         Long manufactureId,
         String manufacturer,
+        Long bplRefItem,
+        Long ciRefItem,
+        Long prefItem,
         String pname,
+        String description,
         String bigImage,
         BigDecimal oQty,
         BigDecimal bprice,
