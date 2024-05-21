@@ -18,7 +18,7 @@
 ### 이미지 샘플
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/f4fac8b7-79b7-44cc-88cb-5804965db2ec)
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/6f519484-8528-4ac8-a996-d577b39b4ec1)
-![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/f147fbb6-777b-41f8-a027-43d54c52a606)
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/0e93e6bf-e0e9-4c77-970f-75e8b206f62b)
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/fcd59fcf-7654-4996-8876-4121d82d9b4d)
 
 
