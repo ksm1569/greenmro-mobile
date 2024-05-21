@@ -3,7 +3,6 @@ package com.smsoft.greenmromobile.domain.cart.entity;
 import com.smsoft.greenmromobile.domain.product.entity.BuyerPrice;
 import com.smsoft.greenmromobile.domain.product.entity.Product;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -101,4 +100,15 @@ public class Cart {
 
     @Column(name = "OPTEXTVALUE")
     private String opTextValue;
+
+    /**
+     * 상품 수량 변경
+     * @param newQuantity 새로운 수량
+     */
+    public void changeQty(BigDecimal newQuantity) {
+        if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+        }
+        this.oQty = newQuantity;
+    }
 }

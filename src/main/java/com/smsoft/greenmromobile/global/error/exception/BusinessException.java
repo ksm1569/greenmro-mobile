@@ -1,13 +1,14 @@
 package com.smsoft.greenmromobile.global.error.exception;
 
+import com.smsoft.greenmromobile.global.error.ErrorCode;
 import lombok.Getter;
 
 @Getter
 public class BusinessException extends RuntimeException {
-    private String errorCode;
+    private final ErrorCode errorCode;
 
-    public BusinessException(String message, String errorCode) {
-        super(message);
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
 }

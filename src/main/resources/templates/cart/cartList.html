@@ -43,7 +43,6 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
-                    console.log(data);
                     if (data && !$.isEmptyObject(data.groupedOrders)) {
                         $.each(data.groupedOrders, function(manufacturer, items) {
                             let group = $('<div class="cart-group"></div>').appendTo('#cart-contents');
@@ -87,7 +86,15 @@
         }
 
         function renderCartItem(item) {
-            let cartItem = $('<div class="cart-item"></div>');
+            let cartItem = $('<div class="cart-item"></div>')
+                .data('bplRefItem', item.bplRefItem)
+                .data('ciRefItem', item.ciRefItem)
+                .data('prefItem', item.prefItem)
+                .data('delCharge', item.delCharge)
+                .data('delChargeYn', item.delChargeYn)
+                .data('oQty', item.oQty)
+                .data('bprice', item.bprice);
+
             let imageUrl = item.bigImage ? item.bigImage : '/images/noimage.gif';
 
             // 상품명
@@ -113,9 +120,9 @@
             // 하단 컨트롤 행 (수량 조절, 가격 정보)
             let controlsBottom = $('<div class="controls-bottom d-flex justify-content-between align-items-center"></div>').appendTo(controls);
             let quantityControl = $('<div class="quantity-control d-flex align-items-center"></div>').appendTo(controlsBottom);
-            $('<button class="btn btn-success btn-sm">-</button>').appendTo(quantityControl);
-            $('<input type="text" class="form-control" min="1" style="width: 40px;" readonly="readonly">').val(item.oQty).appendTo(quantityControl);
-            $('<button class="btn btn-success btn-sm">+</button>').appendTo(quantityControl);
+            $('<button class="btn btn-success btn-sm btn-decrease">-</button>').appendTo(quantityControl);
+            $('<input type="text" class="form-control quantity-input" min="1" style="width: 38px;" readonly="readonly">').val(item.oQty).appendTo(quantityControl);
+            $('<button class="btn btn-success btn-sm btn-increase">+</button>').appendTo(quantityControl);
             $('<div class="price-detail ml-2"></div>').text(formatNumber(item.bprice) + '원').appendTo(controlsBottom);
 
             return cartItem;
@@ -150,7 +157,6 @@
             let formattedDeliveryFee = formatNumber(deliveryFee);
             deliveryDiv.append('<div class="fee-amount-div"><span class="delivery-fee">배송비</span> <span class="fee-amount">' + formattedDeliveryFee + '</span>원</div>');
         }
-
 
         function updateGroupTotal(group, price, isChecked) {
             let totalDiv = group.find('.group-total');
@@ -193,6 +199,41 @@
                 $('#checkout-footer').hide();
             }
         }
+        function handleQuantityChange(cartItem, delta) {
+            let quantityInput = cartItem.find('.quantity-input');
+            let currentQuantity = parseInt(quantityInput.val());
+            let newQuantity = currentQuantity + delta;
+
+            if (newQuantity < 1) {
+                return; // 수량이 1 미만으로 감소하지 않도록 방지하고 요청을 보내지 않음
+            }
+
+            quantityInput.val(newQuantity);
+            if (newQuantity !== currentQuantity) {
+                changeQty(cartItem, newQuantity);
+            }
+        }
+
+        function changeQty(cartItem, currentQuantity) {
+            let ciRefItem = cartItem.data('ciRefItem');
+            let bplRefItem = cartItem.data('bplRefItem');
+            $.ajax({
+                url: '/api/cart/changeQty',
+                type: 'PATCH',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    ciRefItem: ciRefItem,
+                    bplRefItem: bplRefItem,
+                    newQuantity: currentQuantity
+                }),
+                success: function(response) {
+                    console.log("Quantity updated successfully", response);
+                },
+                error: function(error) {
+                    console.error("Failed to update quantity", error);
+                }
+            });
+        }
 
         $('#btn-delete-selected').on('click', function() {
             $('.item-select:checked').each(function() {
@@ -214,6 +255,19 @@
         $('.item-select').change(function() {
             calculateTotalAndShowFooter();
         });
+
+        // 플러스 버튼 클릭 시
+        $('#cart-contents').on('click', '.btn-increase', function() {
+            let cartItem = $(this).closest('.cart-item');
+            handleQuantityChange(cartItem, 1);
+        });
+
+        // 마이너스 버튼 클릭 시
+        $('#cart-contents').on('click', '.btn-decrease', function() {
+            let cartItem = $(this).closest('.cart-item');
+            handleQuantityChange(cartItem, -1);
+        });
+
 
         loadCartData();
     });

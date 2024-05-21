@@ -1,6 +1,7 @@
 package com.smsoft.greenmromobile.api.cart.controller;
 
 import com.smsoft.greenmromobile.domain.cart.dto.CartListRequestDto;
+import com.smsoft.greenmromobile.domain.cart.dto.CartQtyRequestDto;
 import com.smsoft.greenmromobile.domain.cart.dto.PagedCartResponseDto;
 import com.smsoft.greenmromobile.domain.cart.service.CartService;
 import com.smsoft.greenmromobile.global.jwt.JwtUtil;
@@ -24,5 +25,16 @@ public class CartApiController {
         Long urefItem = jwtUtil.getUrefItemFromToken(token);
         PagedCartResponseDto pagedResponse = cartService.groupByManufacturer(urefItem, cartListRequestDto);
         return ResponseEntity.ok(pagedResponse);
+    }
+
+    @PatchMapping("/changeQty")
+    public ResponseEntity<?> changeQty(
+            @CookieValue(name = "accessToken", required = true) String token,
+            @RequestBody @Valid CartQtyRequestDto cartQtyRequestDto
+    ) {
+        Long urefItem = jwtUtil.getUrefItemFromToken(token);
+        cartService.changeQty(urefItem, cartQtyRequestDto);
+
+        return ResponseEntity.ok().build();
     }
 }
