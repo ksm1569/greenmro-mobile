@@ -28,6 +28,11 @@
 
 </div>
 
+<div class="fixed-footer" id="checkout-footer" style="display: none;">
+    <div class="payment-info" id="total-info"></div>
+    <button class="pay-button" onclick="alert('결제하기 개발중')"></button>
+</div>
+
 <div th:replace="~{layout/footer :: footer}"></div>
 <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
 <script>
@@ -58,13 +63,15 @@
                                 resetGroupTotal(group);
                                 group.find('.item-select').prop('checked', isChecked);
                                 calculateGroupTotal(group);
+                                calculateTotalAndShowFooter();
                             });
 
-                            let groupTotal = $('<div class="group-total" style="display:none;"></div>').appendTo(group);
+                            let gropuTotal = $('<div class="group-total" style="display:none;"></div>').appendTo(group);
 
                             // 상품 선택 시 합계금액 갱신
                             group.find('.item-select').change(function() {
                                 calculateGroupTotal($(this).closest('.cart-group'));
+                                calculateTotalAndShowFooter();
                             });
                         });
                     }
@@ -97,7 +104,8 @@
             let controlsTop = $('<div class="controls-top d-flex justify-content-between align-items-center"></div>').appendTo(controls);
             let leftControls = $('<div class="left-controls d-flex align-items-center"></div>').appendTo(controlsTop);
             let checkboxId = 'item-' + item.prefItem; // 체크박스와 라벨
-            $('<input class="form-check-input item-select" type="checkbox" id="' + checkboxId + '" data-price="' + item.bprice + '">').appendTo(leftControls);
+            let checkbox = $('<input class="form-check-input item-select" type="checkbox" id="' + checkboxId + '" data-price="' + item.bprice + '">');
+            checkbox.data('delChargeYn', item.delChargeYn).data('delCharge', item.delCharge).appendTo(leftControls);
             let descriptionText = item.description.length > 24 ? item.description.substring(0, 24) + '...' : item.description;
             $('<label class="spec-text" for="' + checkboxId + '"></label>').text(descriptionText).appendTo(leftControls);
             $('<button class="delete-button btn btn-danger btn-sm">×</button>').appendTo(controlsTop);
@@ -122,11 +130,27 @@
 
         function calculateGroupTotal(group) {
             resetGroupTotal(group); // 총합 초기화
+            let deliveryFee = 0;
             group.find('.item-select:checked').each(function() {
                 let price = parseFloat($(this).data('price'));
                 updateGroupTotal(group, price, true);
+
+                // 배송비 계산
+                let delChargeYn = $(this).data('delChargeYn');
+                let delCharge = parseFloat($(this).data('delCharge'));
+                if (delChargeYn === 'Y') {
+                    deliveryFee += delCharge;
+                }
             });
+            updateDeliveryFee(group, deliveryFee); // 배송비 업데이트
         }
+
+        function updateDeliveryFee(group, deliveryFee) {
+            let deliveryDiv = group.find('.group-total');
+            let formattedDeliveryFee = formatNumber(deliveryFee);
+            deliveryDiv.append('<div class="fee-amount-div"><span class="delivery-fee">배송비</span> <span class="fee-amount">' + formattedDeliveryFee + '</span>원</div>');
+        }
+
 
         function updateGroupTotal(group, price, isChecked) {
             let totalDiv = group.find('.group-total');
@@ -134,11 +158,39 @@
             currentTotal += (isChecked ? price : -price);
             totalDiv.data('total', Math.max(0, currentTotal)); // 음수 방지
             let formattedTotal = formatNumber(currentTotal);
-            totalDiv.html('<span class="total-text">합계금액 <span class="total-amount">' + formattedTotal + '</span>원</span>');
+            totalDiv.html('<div class="total-amount-div"><span class="total-text">합계금액</span> <span class="total-amount">' + formattedTotal + '</span>원</div>');
             if (currentTotal > 0) {
                 totalDiv.slideDown();
             } else {
                 totalDiv.slideUp();
+            }
+        }
+
+        function calculateTotalAndShowFooter() {
+            let totalAmount = 0;
+            let totalDeliveryFee = 0;
+            $('.cart-group').each(function() {
+                let group = $(this);
+                let groupTotal = parseFloat(group.find('.group-total').data('total')) || 0;
+                totalAmount += groupTotal;
+
+                // 각 그룹의 배송비 합산
+                group.find('.item-select:checked').each(function() {
+                    let delChargeYn = $(this).data('delChargeYn');
+                    let delCharge = parseFloat($(this).data('delCharge'));
+                    if (delChargeYn === 'Y') {
+                        totalDeliveryFee += delCharge;
+                    }
+                });
+            });
+
+            // 전체 합계가 0보다 크면 footer 표시, 아니면 숨김
+            if (totalAmount > 0 || totalDeliveryFee > 0) {
+                $('#total-info').text('상품 ' + formatNumber(totalAmount) + ' + 배송비 ' + formatNumber(totalDeliveryFee) + '원');
+                $('.pay-button').text(formatNumber(totalAmount + totalDeliveryFee) + '원 결제하기');
+                $('#checkout-footer').show();
+            } else {
+                $('#checkout-footer').hide();
             }
         }
 
@@ -155,6 +207,12 @@
             $('.cart-group').each(function() {
                 calculateGroupTotal($(this)); // 전체 그룹의 합계 갱신
             });
+
+            calculateTotalAndShowFooter();
+        });
+
+        $('.item-select').change(function() {
+            calculateTotalAndShowFooter();
         });
 
         loadCartData();
