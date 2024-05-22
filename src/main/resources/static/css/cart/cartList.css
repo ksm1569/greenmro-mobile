@@ -197,3 +197,8 @@ body {
     background-color: #4CAF50;
     border-color: #4CAF50;
 }
+
+.modal-dialog {
+    top: 35%;
+    margin: 0 auto;
+}

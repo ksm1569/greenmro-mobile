@@ -19,7 +19,7 @@
         </div>
         <div>
             <button class="btn btn-outline-secondary btn-sm" type="button" id="btn-delete-selected">선택 삭제</button>
-            <button class="btn btn-outline-secondary btn-sm" type="button" id="btn-delete-sold-out">품절상품 모두삭제</button>
+<!--            <button class="btn btn-outline-secondary btn-sm" type="button" id="btn-delete-sold-out">품절상품 모두삭제</button>-->
         </div>
 
     </div>
@@ -31,6 +31,25 @@
 <div class="fixed-footer" id="checkout-footer" style="display: none;">
     <div class="payment-info" id="total-info"></div>
     <button class="pay-button" onclick="alert('결제하기 개발중')"></button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">품목 삭제 확인</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                해당 품목을 장바구니에서 삭제하시겠습니까
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="confirmDelete">삭제</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div th:replace="~{layout/footer :: footer}"></div>
@@ -87,6 +106,7 @@
 
         function renderCartItem(item) {
             let cartItem = $('<div class="cart-item"></div>')
+                .attr('data-ci-ref-item', item.ciRefItem)
                 .data('bplRefItem', item.bplRefItem)
                 .data('ciRefItem', item.ciRefItem)
                 .data('prefItem', item.prefItem)
@@ -139,8 +159,12 @@
             resetGroupTotal(group); // 총합 초기화
             let deliveryFee = 0;
             group.find('.item-select:checked').each(function() {
-                let price = parseFloat($(this).data('price'));
-                updateGroupTotal(group, price, true);
+                let item = $(this).closest('.cart-item');
+                let price = parseFloat(item.data('bprice'));
+                let quantity = parseInt(item.find('.quantity-input').val());
+                let totalPrice = price * quantity;
+
+                updateGroupTotal(group, totalPrice, true);
 
                 // 배송비 계산
                 let delChargeYn = $(this).data('delChargeYn');
@@ -199,6 +223,8 @@
                 $('#checkout-footer').hide();
             }
         }
+
+        // 수량조정 핸들러
         function handleQuantityChange(cartItem, delta) {
             let quantityInput = cartItem.find('.quantity-input');
             let currentQuantity = parseInt(quantityInput.val());
@@ -208,12 +234,12 @@
                 return; // 수량이 1 미만으로 감소하지 않도록 방지하고 요청을 보내지 않음
             }
 
-            quantityInput.val(newQuantity);
             if (newQuantity !== currentQuantity) {
                 changeQty(cartItem, newQuantity);
             }
         }
 
+        //수량조정 서버와 통신
         function changeQty(cartItem, currentQuantity) {
             let ciRefItem = cartItem.data('ciRefItem');
             let bplRefItem = cartItem.data('bplRefItem');
@@ -227,7 +253,12 @@
                     newQuantity: currentQuantity
                 }),
                 success: function(response) {
-                    console.log("Quantity updated successfully", response);
+                    // 성공적인 응답 후 입력 필드와 가격 정보 업데이트
+                    let quantityInput = cartItem.find('.quantity-input');
+                    quantityInput.val(currentQuantity); // 입력 필드 업데이트
+                    let group = cartItem.closest('.cart-group');
+                    calculateGroupTotal(group); // 변경된 수량에 따라 그룹 합계를 다시 계산
+                    calculateTotalAndShowFooter(); // 전체 합계 갱신
                 },
                 error: function(error) {
                     console.error("Failed to update quantity", error);
@@ -235,10 +266,93 @@
             });
         }
 
-        $('#btn-delete-selected').on('click', function() {
-            $('.item-select:checked').each(function() {
-                $(this).closest('.cart-item').remove();
+        // 그룹 내 품목이 없으면 그룹 삭제
+        function checkAndRemoveGroupIfNeeded(group) {
+            if (group.find('.cart-item').length === 0) {
+                group.remove();
+            }
+            calculateTotalAndShowFooter(); // 전체 합계 갱신
+        }
+
+        // 개별 항목 삭제 함수
+        function deleteCartItem(ciRefItem, cartItem) {
+            $.ajax({
+                url: `/api/cart/${ciRefItem}`,
+                type: 'DELETE',
+                success: function(response) {
+                    let group = cartItem.closest('.cart-group');
+                    cartItem.remove(); // 해당 품목 삭제
+                    checkAndRemoveGroupIfNeeded(group); // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                },
+                error: function(error) {
+                    console.error("Failed to delete item", error);
+                }
             });
+        }
+
+        // 선택된 여러 항목 삭제 함수
+        function deleteMultipleCartItems(idsToDelete) {
+            $.ajax({
+                url: '/api/cart/deleteMultiple',
+                type: 'DELETE',
+                contentType: 'application/json',
+                data: JSON.stringify(idsToDelete),
+                success: function(response) {
+                    idsToDelete.forEach(id => {
+                        let cartItem = $(`.cart-item[data-ci-ref-item="${id}"]`);
+                        let group = cartItem.closest('.cart-group');
+                        cartItem.remove(); // 해당 품목 삭제
+                        checkAndRemoveGroupIfNeeded(group); // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                    });
+                },
+                error: function(error) {
+                    console.error("Failed to delete multiple items", error);
+                }
+            });
+        }
+
+        // 모달에서 '삭제' 버튼 클릭 시
+        $('#confirmDelete').on('click', function() {
+            let deleteType = $('#deleteConfirmationModal').data('deleteType');
+            if (deleteType === 'single') {
+                let cartItem = $('#deleteConfirmationModal').data('cartItem');
+                let ciRefItem = cartItem.data('ciRefItem');
+                deleteCartItem(ciRefItem, cartItem);
+            } else if (deleteType === 'multiple') {
+                let selectedItems = $('.item-select:checked');
+                let idsToDelete = Array.from(selectedItems).map(input => $(input).closest('.cart-item').data('ciRefItem'));
+                deleteMultipleCartItems(idsToDelete);
+            }
+            $('#deleteConfirmationModal').modal('hide');
+        });
+
+        // 개별삭제(x버튼) 버튼 클릭 시 - 모달띄워줌
+        $('#cart-contents').on('click', '.delete-button', function() {
+            let cartItem = $(this).closest('.cart-item');
+            $('#deleteConfirmationModal').data('deleteType', 'single').data('cartItem', cartItem); // 모달에 single, cartItem 데이터 설정
+            $('#deleteConfirmationModal').modal('show'); // 모달 표시
+        });
+
+        // 플러스 버튼 클릭 시
+        $('#cart-contents').on('click', '.btn-increase', function() {
+            let cartItem = $(this).closest('.cart-item');
+            handleQuantityChange(cartItem, 1);
+        });
+
+        // 마이너스 버튼 클릭 시
+        $('#cart-contents').on('click', '.btn-decrease', function() {
+            let cartItem = $(this).closest('.cart-item');
+            handleQuantityChange(cartItem, -1);
+        });
+
+        // 선택삭제 버튼 클릭 시 - 모달 설정과 표시
+        $('#btn-delete-selected').on('click', function() {
+            if ($('.item-select:checked').length === 0) {
+                alert('삭제할 항목을 선택하세요.');
+                return;
+            }
+            $('#deleteConfirmationModal').data('deleteType', 'multiple');
+            $('#deleteConfirmationModal').modal('show');
         });
 
         $('#select-all').change(function() {
@@ -255,19 +369,6 @@
         $('.item-select').change(function() {
             calculateTotalAndShowFooter();
         });
-
-        // 플러스 버튼 클릭 시
-        $('#cart-contents').on('click', '.btn-increase', function() {
-            let cartItem = $(this).closest('.cart-item');
-            handleQuantityChange(cartItem, 1);
-        });
-
-        // 마이너스 버튼 클릭 시
-        $('#cart-contents').on('click', '.btn-decrease', function() {
-            let cartItem = $(this).closest('.cart-item');
-            handleQuantityChange(cartItem, -1);
-        });
-
 
         loadCartData();
     });

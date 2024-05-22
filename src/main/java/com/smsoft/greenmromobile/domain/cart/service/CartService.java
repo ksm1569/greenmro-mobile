@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -37,13 +38,27 @@ public class CartService {
                 .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
         // 벨리데이션 체크
-        validateBusinessConditions(cart, cartQtyRequestDto.newQuantity());
+        validateQtyBusinessConditions(cart, cartQtyRequestDto.newQuantity());
 
         cart.changeQty(BigDecimal.valueOf(cartQtyRequestDto.newQuantity()));
         cartRepository.save(cart);
     }
 
-    private void validateBusinessConditions(Cart cart, Long newQuantity) {
+    @Transactional
+    public void deleteCartItem(Long ciRefItem) {
+        if (!cartRepository.existsById(ciRefItem)) {
+            throw new EntityNotFoundException("Cart item not found");
+        }
+
+        cartRepository.deleteById(ciRefItem);
+    }
+
+    @Transactional
+    public void deleteMultipleItems(List<Long> ids) {
+        cartRepository.deleteAllByCiRefItemIdIn(ids);
+    }
+
+    private void validateQtyBusinessConditions(Cart cart, Long newQuantity) {
         // 입력 수량이 재고수량을 초과했는지 체크
         Long stockQty = cart.getProduct().getStockQty();
         if (newQuantity > stockQty) {

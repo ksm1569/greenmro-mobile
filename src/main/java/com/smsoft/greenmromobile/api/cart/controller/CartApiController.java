@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/cart")
@@ -35,6 +37,18 @@ public class CartApiController {
         Long urefItem = jwtUtil.getUrefItemFromToken(token);
         cartService.changeQty(urefItem, cartQtyRequestDto);
 
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{ciRefItem}")
+    public ResponseEntity<?> deleteCartItem(@PathVariable Long ciRefItem) {
+        cartService.deleteCartItem(ciRefItem);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/deleteMultiple")
+    public ResponseEntity<?> deleteMultipleItems(@RequestBody List<Long> ids) {
+        cartService.deleteMultipleItems(ids);
         return ResponseEntity.ok().build();
     }
 }
