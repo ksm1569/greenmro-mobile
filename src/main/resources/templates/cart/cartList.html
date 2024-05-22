@@ -270,8 +270,9 @@
         function checkAndRemoveGroupIfNeeded(group) {
             if (group.find('.cart-item').length === 0) {
                 group.remove();
+                return false; // 그룹이 삭제됐으므로 합계 재계산 불필요
             }
-            calculateTotalAndShowFooter(); // 전체 합계 갱신
+            return true; // 그룹이 남아있으므로 합계 재계산 필요
         }
 
         // 개별 항목 삭제 함수
@@ -282,7 +283,10 @@
                 success: function(response) {
                     let group = cartItem.closest('.cart-group');
                     cartItem.remove(); // 해당 품목 삭제
-                    checkAndRemoveGroupIfNeeded(group); // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                    if (checkAndRemoveGroupIfNeeded(group)) { // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                        calculateGroupTotal(group); // 그룹 합계 재계산
+                    }
+                    calculateTotalAndShowFooter(); // 전체 합계 갱신
                 },
                 error: function(error) {
                     console.error("Failed to delete item", error);
@@ -302,7 +306,9 @@
                         let cartItem = $(`.cart-item[data-ci-ref-item="${id}"]`);
                         let group = cartItem.closest('.cart-group');
                         cartItem.remove(); // 해당 품목 삭제
-                        checkAndRemoveGroupIfNeeded(group); // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                        if (checkAndRemoveGroupIfNeeded(group)) { // 그룹 내 품목 체크 후 필요시 그룹 삭제
+                            calculateGroupTotal(group); // 그룹 합계 재계산
+                        }
                     });
                 },
                 error: function(error) {
