@@ -47,7 +47,7 @@ class OrderApiControllerIntegrationTest {
     void setUpToken() {
         CustomUserDetails userDetails = new CustomUserDetails(
                 "testUser", "password123", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")),
-                null, 123L
+                null, 123L, 15575L
         );
         accessToken = jwtUtil.generateToken(userDetails);
     }

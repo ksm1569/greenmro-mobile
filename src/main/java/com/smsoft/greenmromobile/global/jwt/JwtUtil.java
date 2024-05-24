@@ -57,6 +57,7 @@ public class JwtUtil {
         Claims claims = Jwts.claims();
         claims.put("username", userDetails.getUsername());
         claims.put("urefItem", ((CustomUserDetails) userDetails).getUrefitem());
+        claims.put("ucompanyRef", ((CustomUserDetails) userDetails).getUcompanyRef());
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -84,6 +85,11 @@ public class JwtUtil {
     public Long getUrefItemFromToken(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("urefItem", Long.class);
+    }
+
+    public Long getUcompanyRefFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("ucompanyRef", Long.class);
     }
 
     public boolean validateToken(String token) {
