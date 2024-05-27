@@ -40,11 +40,29 @@
         </div>
 
         <div class="reg-products-container">
-            <h5 class="text-left ms-3 mt-4 mb-3">고객사 등록상품</h5>
+            <div class="reg-products-header">
+                <h5 class="text-left ms-3 mt-4 mb-3">고객사 등록상품</h5>
+                <button class="reg-load-more-btn" id="reg-more">더보기</button>
+            </div>
+
+            <div class="scroll-arrow left" id="reg-scroll-left"><</div>
+            <div class="product-reg-grid" id="product-reg-contents">
+
+            </div>
+            <div class="scroll-arrow right" id="reg-scroll-right">></div>
         </div>
 
         <div class="un-reg-products-container">
-            <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록상품</h5>
+            <div class="un-reg-products-header">
+                <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록상품</h5>
+                <button class="un-reg-load-more-btn" id="un-reg-more">더보기</button>
+            </div>
+
+            <div class="scroll-arrow left" id="un-reg-scroll-left"><</div>
+            <div class="product-un-reg-grid" id="product-un-reg-contents">
+
+            </div>
+            <div class="scroll-arrow right" id="un-reg-scroll-right">></div>
         </div>
     </div>
 
@@ -53,9 +71,142 @@
     <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
 
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            let regContainer = $('#product-reg-contents');
+            let isLastRegProduct = false;
+            let isLoadingRegProduct = false;
+            let regProductPage = 0;
+            let regProductSize = 30;
 
+            let unRegContainer = $('#product-un-reg-contents');
+            let isLastUnRegProduct = false;
+            let isLoadingUnRegProduct = false;
+            let unRegProductPage = 0;
+            let unRegProductSize = 50;
+
+            function loadUnRegProductData() {
+                if (isLoadingUnRegProduct || isLastUnRegProduct) return;
+                isLoadingUnRegProduct = true;
+
+                $.ajax({
+                    url: 'api/products/unregistered',
+                    type: 'GET',
+                    data: {
+                        page: unRegProductPage,
+                        size: unRegProductSize
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        console.log(data);
+                        renderUnRegProducts(data.content);
+
+                        if (data.last) {
+                            isLastUnRegProduct = true;
+                        }
+
+                        unRegProductPage++;
+                        isLoadingUnRegProduct = false;
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('데이터 로드 실패:', error);
+                    }
+                });
+            }
+
+            function loadRegProductData() {
+                if (isLoadingRegProduct || isLastRegProduct) return;
+                isLoadingRegProduct = true;
+
+                $.ajax({
+                    url: 'api/products/registered',
+                    type: 'GET',
+                    data: {
+                        page: regProductPage,
+                        size: regProductSize
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        console.log(data);
+                        renderRegProducts(data.content);
+
+                        if (data.last) {
+                            isLastRegProduct = true;
+                        }
+
+                        regProductPage++;
+                        isLoadingRegProduct = false;
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('데이터 로드 실패:', error);
+                    }
+                });
+            }
+
+            function renderUnRegProducts(products) {
+                let container = $('#product-un-reg-contents');
+                products.forEach(function(product) {
+                    container.append(`
+                        <div class="product-un-reg-item">
+                            <img src="${product.bigImage}" alt="${product.pname}">
+                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                        </div>
+                    `);
+                });
+            }
+
+            function renderRegProducts(products) {
+                let container = $('#product-reg-contents');
+                products.forEach(function(product) {
+                    container.append(`
+                        <div class="product-reg-item">
+                            <img src="${product.bigImage}" alt="${product.pname}">
+                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                        </div>
+                    `);
+                });
+            }
+
+            function truncateString(str, num) {
+                if (str.length > num) {
+                    return str.substring(0, num) + '...';
+                } else {
+                    return str;
+                }
+            }
+
+            $('#product-reg-contents').on('scroll', function() {
+                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
+                    loadRegProductData();
+                }
+            });
+
+            $('#product-un-reg-contents').on('scroll', function() {
+                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
+                    loadUnRegProductData();
+                }
+            });
+
+            $('#reg-scroll-left').click(function() {
+                regContainer.animate({ scrollLeft: '-=400px' }, 400);
+            });
+
+            $('#reg-scroll-right').click(function() {
+                regContainer.animate({ scrollLeft: '+=400px' }, 400);
+            });
+
+            $('#un-reg-scroll-left').click(function() {
+                unRegContainer.animate({ scrollLeft: '-=400px' }, 400);
+            });
+
+            $('#un-reg-scroll-right').click(function() {
+                unRegContainer.animate({ scrollLeft: '+=400px' }, 400);
+            });
+
+            loadUnRegProductData();
+            loadRegProductData();
         });
+
+
     </script>
 
 </body>

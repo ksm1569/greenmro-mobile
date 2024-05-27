@@ -60,7 +60,7 @@ public class OrderService {
     }
 
     private String formatImageUrl(String imageUrl) {
-        if (imageUrl != null && !imageUrl.contains("https://")) {
+        if (imageUrl != null && !imageUrl.contains("https://") && !imageUrl.contains("http://")) {
             return "https://shop.greenproduct.co.kr" + imageUrl;
         }
         return imageUrl;

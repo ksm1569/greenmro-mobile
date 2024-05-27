@@ -14,13 +14,12 @@ import com.smsoft.greenmromobile.domain.product.entity.QBuyerPrice;
 import com.smsoft.greenmromobile.domain.product.entity.QProduct;
 import com.smsoft.greenmromobile.domain.product.entity.QVendorMasterInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -141,7 +140,7 @@ public class CartCustomRepositoryImpl implements CartCustomRepository{
     }
 
     private String formatImageUrl(String imageUrl) {
-        if (imageUrl != null && !imageUrl.contains("https://")) {
+        if (imageUrl != null && !imageUrl.contains("https://") && !imageUrl.contains("http://")) {
             return "https://shop.greenproduct.co.kr" + imageUrl;
         }
         return imageUrl;

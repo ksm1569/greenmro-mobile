@@ -1,8 +1,6 @@
 package com.smsoft.greenmromobile.domain.product.service;
 
-import com.smsoft.greenmromobile.domain.product.dto.PagedProductRegResponseDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductRegListRequestDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductRegListResponseDto;
+import com.smsoft.greenmromobile.domain.product.dto.*;
 import com.smsoft.greenmromobile.domain.product.repository.ProductCustomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +14,7 @@ public class ProductService {
     private final ProductCustomRepository productCustomRepository;
 
     @Transactional(readOnly = true)
-    public PagedProductRegResponseDto<ProductRegListResponseDto> getRegisteredProducts
-    (
+    public PagedProductResponseDto<ProductRegListResponseDto> getRegisteredProducts(
         Long userId,
         Long companyId,
         ProductRegListRequestDto productRegListRequestDto
@@ -25,5 +22,16 @@ public class ProductService {
         Pageable pageable = PageRequest.of(productRegListRequestDto.page(), productRegListRequestDto.size() + 2);
 
         return productCustomRepository.getRegisteredProducts(userId, companyId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedProductResponseDto<ProductUnRegListResponseDto> getUnRegisteredProducts(
+            Long userId,
+            Long companyId,
+            ProductUnRegListRequestDto productUnRegListRequestDto
+    ) {
+        Pageable pageable = PageRequest.of(productUnRegListRequestDto.page(), productUnRegListRequestDto.size() + 2);
+
+        return productCustomRepository.getUnRegisteredProducts(userId, companyId, pageable);
     }
 }
