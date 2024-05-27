@@ -1,6 +1,5 @@
 package com.smsoft.greenmromobile.domain.product.repository;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.smsoft.greenmromobile.domain.product.dto.PagedProductRegResponseDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductRegListResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +11,12 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
 public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     private final JdbcTemplate jdbcTemplate;
-    private final JPAQueryFactory queryFactory;
 
     @Override
     public PagedProductRegResponseDto<ProductRegListResponseDto> getRegisteredProducts(Long userId, Long companyId, Pageable pageable) {
@@ -25,31 +24,39 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         int startRow = (int) pageable.getOffset() + 1;
         int endRow = startRow + pageSize - 1;
 
-        // 오라클 SQL 페이징 쿼리
+        // 페이징 쿼리
         String sql = "SELECT * FROM (" +
-                "  SELECT a.*, ROWNUM rnum FROM (" +
-                "    SELECT P.BIGIMAGE, P.PNAME, BP.BPRICE FROM PRODUCTS P" +
+                "  SELECT a.*, ROW_NUMBER() OVER (ORDER BY a.UPDATEDON DESC) AS row_num" +
+                "  FROM (" +
+                "    SELECT P.BIGIMAGE, P.PNAME, BP.BPRICE, BP.UPDATEDON FROM PRODUCTS P" +
                 "    INNER JOIN BUYERPRICES BP ON P.PREFITEM = BP.PREFITEM" +
                 "    WHERE BP.UCOMPANYREF = ?" +
                 "      AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD')" +
                 "      AND P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y'" +
-                "    ORDER BY BP.UPDATEDON DESC" +
-                "  ) a WHERE ROWNUM <= ?" +  // 최대 행 수
-                ") WHERE rnum >= ?";         // 최소 행 시작
+                "  ) a" +
+                ") WHERE row_num BETWEEN ? AND ?";
 
         List<ProductRegListResponseDto> products = jdbcTemplate.query(
                 sql,
-                new Object[] { companyId, endRow, startRow },
+                ps -> {
+                    ps.setLong(1, companyId);
+                    ps.setInt(2, startRow);
+                    ps.setInt(3, endRow);
+                },
                 new ProductRegListResponseDtoMapper());
 
         // 전체 제품 수 계산
-        String countSql = "SELECT COUNT(*) FROM PRODUCTS P" +
+        String countQuery = "SELECT COUNT(*) FROM PRODUCTS P" +
                 " INNER JOIN BUYERPRICES BP ON P.PREFITEM = BP.PREFITEM" +
                 " WHERE BP.UCOMPANYREF = ?" +
                 " AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD')" +
                 " AND P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y'";
 
-        Long totalElements = jdbcTemplate.queryForObject(countSql, new Object[] { companyId }, Long.class);
+        Optional<Long> totalElementsOpt = Optional.ofNullable(
+                jdbcTemplate.queryForObject(countQuery, Long.class, companyId)
+        );
+
+        Long totalElements = totalElementsOpt.orElse(0L);
         int totalPages = (int) Math.ceil((double) totalElements / pageSize);
         boolean isLast = endRow >= totalElements;
 
@@ -60,10 +67,17 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         @Override
         public ProductRegListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new ProductRegListResponseDto(
-                    rs.getString("BIGIMAGE"),
+                    formatImageUrl(rs.getString("BIGIMAGE")),
                     rs.getString("PNAME"),
                     rs.getBigDecimal("BPRICE")
             );
         }
+    }
+
+    private static String formatImageUrl(String imageUrl) {
+        if (imageUrl != null && !imageUrl.contains("https://")) {
+            return "https://shop.greenproduct.co.kr" + imageUrl;
+        }
+        return imageUrl;
     }
 }
