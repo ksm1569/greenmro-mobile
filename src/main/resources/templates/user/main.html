@@ -39,9 +39,22 @@
             </div>
         </div>
 
+        <div class="pop-products-container">
+            <div class="pop-products-header">
+                <h5 class="text-left ms-3 mt-4 mb-3">인기 상품</h5>
+                <button class="pop-load-more-btn" id="pop-more">더보기</button>
+            </div>
+
+            <div class="scroll-arrow left" id="pop-scroll-left"><</div>
+            <div class="product-pop-grid" id="product-pop-contents">
+
+            </div>
+            <div class="scroll-arrow right" id="pop-scroll-right">></div>
+        </div>
+
         <div class="reg-products-container">
             <div class="reg-products-header">
-                <h5 class="text-left ms-3 mt-4 mb-3">고객사 등록상품</h5>
+                <h5 class="text-left ms-3 mt-4 mb-3">고객사 등록 상품</h5>
                 <button class="reg-load-more-btn" id="reg-more">더보기</button>
             </div>
 
@@ -54,7 +67,7 @@
 
         <div class="un-reg-products-container">
             <div class="un-reg-products-header">
-                <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록상품</h5>
+                <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록 상품</h5>
                 <button class="un-reg-load-more-btn" id="un-reg-more">더보기</button>
             </div>
 
@@ -84,6 +97,40 @@
             let unRegProductPage = 0;
             let unRegProductSize = 50;
 
+            let popContainer = $('#product-pop-contents');
+            let isLastPopProduct = false;
+            let isLoadingPopProduct = false;
+            let popProductPage = 0;
+            let popProductSize = 50;
+
+            function loadPopProductData() {
+                if (isLoadingPopProduct || isLastPopProduct) return;
+                isLoadingPopProduct = true;
+
+                $.ajax({
+                    url: 'api/products/popular',
+                    type: 'GET',
+                    data: {
+                        page: popProductPage,
+                        size: popProductSize
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        renderPopProducts(data.content);
+
+                        if (data.last) {
+                            isLastPopProduct = true;
+                        }
+
+                        popProductPage++;
+                        isLoadingPopProduct = false;
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('데이터 로드 실패:', error);
+                    }
+                });
+            }
+
             function loadUnRegProductData() {
                 if (isLoadingUnRegProduct || isLastUnRegProduct) return;
                 isLoadingUnRegProduct = true;
@@ -97,7 +144,6 @@
                     },
                     dataType: 'json',
                     success: function(data){
-                        console.log(data);
                         renderUnRegProducts(data.content);
 
                         if (data.last) {
@@ -126,7 +172,6 @@
                     },
                     dataType: 'json',
                     success: function(data){
-                        console.log(data);
                         renderRegProducts(data.content);
 
                         if (data.last) {
@@ -139,6 +184,18 @@
                     error: function (xhr, status, error) {
                         console.error('데이터 로드 실패:', error);
                     }
+                });
+            }
+
+            function renderPopProducts(products) {
+                let container = $('#product-pop-contents');
+                products.forEach(function(product) {
+                    container.append(`
+                        <div class="product-pop-item">
+                            <img src="${product.bigImage}" alt="${product.pname}">
+                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                        </div>
+                    `);
                 });
             }
 
@@ -186,6 +243,12 @@
                 }
             });
 
+            $('#product-pop-contents').on('scroll', function() {
+                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
+                    loadPopProductData();
+                }
+            });
+
             $('#reg-scroll-left').click(function() {
                 regContainer.animate({ scrollLeft: '-=400px' }, 400);
             });
@@ -202,11 +265,18 @@
                 unRegContainer.animate({ scrollLeft: '+=400px' }, 400);
             });
 
+            $('#pop-scroll-left').click(function() {
+                popContainer.animate({ scrollLeft: '-=400px' }, 400);
+            });
+
+            $('#pop-scroll-right').click(function() {
+                popContainer.animate({ scrollLeft: '+=400px' }, 400);
+            });
+
+            loadPopProductData();
             loadUnRegProductData();
             loadRegProductData();
         });
-
-
     </script>
 
 </body>

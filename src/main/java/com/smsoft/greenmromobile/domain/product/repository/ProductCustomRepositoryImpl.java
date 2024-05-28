@@ -1,8 +1,12 @@
 package com.smsoft.greenmromobile.domain.product.repository;
 
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.smsoft.greenmromobile.domain.product.dto.PagedProductResponseDto;
+import com.smsoft.greenmromobile.domain.product.dto.ProductPopListResponseDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductRegListResponseDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductUnRegListResponseDto;
+import com.smsoft.greenmromobile.domain.product.entity.QPopularProduct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,6 +23,7 @@ import java.util.Optional;
 @Repository
 public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public PagedProductResponseDto<ProductRegListResponseDto> getRegisteredProducts(Long userId, Long companyId, Pageable pageable) {
@@ -30,7 +35,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         String sql = "SELECT * FROM (" +
                 "  SELECT a.*, ROW_NUMBER() OVER (ORDER BY a.UPDATEDON DESC) AS row_num" +
                 "  FROM (" +
-                "    SELECT P.BIGIMAGE, P.PNAME, BP.BPRICE, BP.UPDATEDON FROM PRODUCTS P" +
+                "    SELECT P.PREFITEM, P.BIGIMAGE, P.PNAME, BP.BPRICE, BP.UPDATEDON FROM PRODUCTS P" +
                 "    INNER JOIN BUYERPRICES BP ON P.PREFITEM = BP.PREFITEM" +
                 "    WHERE BP.UCOMPANYREF = :companyId" +
                 "      AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD')" +
@@ -158,10 +163,54 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         return new PagedProductResponseDto<>(products, currentPageNumber, totalElements, totalPages, isLast);
     }
 
+    @Override
+    public PagedProductResponseDto<ProductPopListResponseDto> getPopProducts(Pageable pageable) {
+        int pageSize = pageable.getPageSize();
+        int startRow = (int) pageable.getOffset() + 1;
+        int endRow = startRow + pageSize - 1;
+
+        QPopularProduct popularProduct = QPopularProduct.popularProduct;
+        List<ProductPopListResponseDto> results = queryFactory
+                .select(Projections.constructor(
+                        ProductPopListResponseDto.class,
+                        popularProduct.prefItem,
+                        popularProduct.bigImage,
+                        popularProduct.pname,
+                        popularProduct.bprice,
+                        popularProduct.cnt,
+                        popularProduct.ranking
+                    )
+                )
+                .from(popularProduct)
+                .where(popularProduct.ranking.between(startRow, endRow))
+                .orderBy(popularProduct.ranking.asc())
+                .fetch();
+
+        results.forEach(prod -> prod.setBigImage(formatImageUrl(prod.getBigImage())));
+
+        long totalElements = Optional.ofNullable(queryFactory
+                        .select(popularProduct.count())
+                        .from(popularProduct)
+                        .fetchOne())
+                .orElse(0L);
+
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        boolean isLast = startRow + results.size() - 1 == totalElements || results.isEmpty();
+
+        return new PagedProductResponseDto<>(
+                results,
+                pageable.getPageNumber(),
+                totalElements,
+                totalPages,
+                isLast
+        );
+    }
+
     private static class ProductRegListResponseDtoMapper implements RowMapper<ProductRegListResponseDto> {
         @Override
         public ProductRegListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new ProductRegListResponseDto(
+                    rs.getLong("PREFITEM"),
                     formatImageUrl(rs.getString("BIGIMAGE")),
                     rs.getString("PNAME"),
                     rs.getBigDecimal("BPRICE")

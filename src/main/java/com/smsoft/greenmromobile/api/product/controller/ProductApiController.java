@@ -1,5 +1,6 @@
 package com.smsoft.greenmromobile.api.product.controller;
 
+import com.smsoft.greenmromobile.domain.product.dto.ProductPopListRequestDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductRegListRequestDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductUnRegListRequestDto;
 import com.smsoft.greenmromobile.domain.product.service.ProductService;
@@ -36,6 +37,13 @@ public class ProductApiController {
         Long ucompanyRef = jwtUtil.getUcompanyRefFromToken(token);
 
         return ResponseEntity.ok(productService.getUnRegisteredProducts(urefItem, ucompanyRef, productUnRegListRequestDto));
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<?> getPopProducts(
+            @Valid @ModelAttribute ProductPopListRequestDto productPopListRequestDto
+    ) {
+        return ResponseEntity.ok(productService.getPopProducts(productPopListRequestDto));
     }
 
 }

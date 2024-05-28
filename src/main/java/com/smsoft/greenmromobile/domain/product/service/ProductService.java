@@ -34,4 +34,13 @@ public class ProductService {
 
         return productCustomRepository.getUnRegisteredProducts(userId, companyId, pageable);
     }
+
+    @Transactional(readOnly = true)
+    public PagedProductResponseDto<ProductPopListResponseDto> getPopProducts(
+            ProductPopListRequestDto productPopListRequestDto
+    ) {
+        Pageable pageable = PageRequest.of(productPopListRequestDto.page(), productPopListRequestDto.size());
+
+        return productCustomRepository.getPopProducts(pageable);
+    }
 }
