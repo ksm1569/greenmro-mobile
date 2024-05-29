@@ -1,12 +1,16 @@
 package com.smsoft.greenmromobile.domain.product.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.smsoft.greenmromobile.domain.product.dto.PagedProductResponseDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductPopListResponseDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductRegListResponseDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductUnRegListResponseDto;
+import com.smsoft.greenmromobile.domain.product.dto.*;
+import com.smsoft.greenmromobile.domain.product.entity.QBuyerPrice;
 import com.smsoft.greenmromobile.domain.product.entity.QPopularProduct;
+import com.smsoft.greenmromobile.domain.product.entity.QProduct;
+import com.smsoft.greenmromobile.domain.product.entity.QProductContent;
+import com.smsoft.greenmromobile.global.error.ErrorCode;
+import com.smsoft.greenmromobile.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,10 +18,15 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Repository
@@ -206,6 +215,52 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         );
     }
 
+    @Override
+    public ProductDetailResponseDto getProductDetail(Long companyId, Long prefItem) {
+        QProduct product = QProduct.product;
+        QProductContent productContent = QProductContent.productContent;
+        QBuyerPrice buyerPrice = QBuyerPrice.buyerPrice;
+
+        // 최대 가격을 조회하는 서브 쿼리
+        JPQLQuery<BigDecimal> maxPriceSubQuery = JPAExpressions
+                .select(buyerPrice.bprice.max())
+                .from(buyerPrice)
+                .where(buyerPrice.product.prefItem.eq(prefItem),
+                        buyerPrice.eDate.goe(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)));
+
+        Optional<ProductDetailResponseDto> results = Optional.ofNullable(queryFactory
+                .select(Projections.constructor(
+                        ProductDetailResponseDto.class,
+                        product.bigImage,
+                        product.bigImageSub1,
+                        product.bigImageSub2,
+                        product.bigImageSub3,
+                        productContent.contents,
+                        product.prefItem,
+                        product.pname,
+                        product.description,
+                        buyerPrice.bplRefItem,
+                        buyerPrice.bprice.coalesce(maxPriceSubQuery).as("bprice")  // 최대 가격을 사용하여 null 대체
+                ))
+                .from(product)
+                .innerJoin(productContent).on(product.prefItem.eq(productContent.prefItem))
+                .leftJoin(buyerPrice).on(product.prefItem.eq(buyerPrice.product.prefItem).and(buyerPrice.uCompanyRef.eq(companyId)))
+                .where(product.prefItem.eq(prefItem))
+                .fetchOne());
+
+        // todo 이미지 서버 이전 시 제거
+        ProductDetailResponseDto responseDto = results.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PRODUCT));
+        responseDto.setBigImage(formatImageUrl(responseDto.getBigImage()));
+        responseDto.setBigImageSub1(formatImageUrl(responseDto.getBigImageSub1()));
+        responseDto.setBigImageSub2(formatImageUrl(responseDto.getBigImageSub2()));
+        responseDto.setBigImageSub3(formatImageUrl(responseDto.getBigImageSub3()));
+
+        // todo 상세 이미지 - 이미지 서버 이전 시 내부 데이터 경로 수정 후 제거
+        responseDto.setContents(updateImagePaths(responseDto.getContents()));
+
+        return responseDto;
+    }
+
     private static class ProductRegListResponseDtoMapper implements RowMapper<ProductRegListResponseDto> {
         @Override
         public ProductRegListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -235,5 +290,19 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
             return "https://shop.greenproduct.co.kr" + imageUrl;
         }
         return imageUrl;
+    }
+
+    private static String updateImagePaths(String htmlContent) {
+        String domain = "https://shop.greenproduct.co.kr";
+        Pattern imgPattern = Pattern.compile("<img[^>]+src=\"(?!http)([^\"]+)\"", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = imgPattern.matcher(htmlContent);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String src = matcher.group(1);
+            String correctedSrc = domain + src;
+            matcher.appendReplacement(sb, matcher.group(0).replace(src, correctedSrc));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

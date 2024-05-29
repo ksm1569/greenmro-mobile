@@ -46,4 +46,13 @@ public class ProductApiController {
         return ResponseEntity.ok(productService.getPopProducts(productPopListRequestDto));
     }
 
+    @GetMapping("/{prefItem}")
+    public ResponseEntity<?> getProductDetail(
+            @CookieValue(name = "accessToken", required = true) String token,
+            @PathVariable Long prefItem
+    ) {
+        Long ucompanyRef = jwtUtil.getUcompanyRefFromToken(token);
+        return ResponseEntity.ok(productService.getProductDetail(ucompanyRef, prefItem));
+    }
+
 }

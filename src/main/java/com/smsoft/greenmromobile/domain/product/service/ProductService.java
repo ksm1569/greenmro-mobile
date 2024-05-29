@@ -43,4 +43,9 @@ public class ProductService {
 
         return productCustomRepository.getPopProducts(pageable);
     }
+
+    @Transactional(readOnly = true)
+    public ProductDetailResponseDto getProductDetail(Long companyId, Long prefItem) {
+        return productCustomRepository.getProductDetail(companyId, prefItem);
+    }
 }

@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "P-001", "수량은 1이상만 입력가능합니다."),
-    EXCEEDED_QUANTITY(HttpStatus.BAD_REQUEST, "P-002", "재고수량을 초과하였습니다.")
+    EXCEEDED_QUANTITY(HttpStatus.BAD_REQUEST, "P-002", "재고수량을 초과하였습니다."),
+    INVALID_PRODUCT(HttpStatus.BAD_REQUEST, "P-003", "존재하지 않는 제품입니다.")
     ;
 
     ErrorCode(HttpStatus httpStatus, String errorCode, String message) {

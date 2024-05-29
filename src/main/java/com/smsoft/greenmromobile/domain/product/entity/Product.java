@@ -1,9 +1,6 @@
 package com.smsoft.greenmromobile.domain.product.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -244,4 +241,8 @@ public class Product {
 
     @Column(name = "ISUSE_2", columnDefinition = "CHAR")
     private String isUse2;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PREFITEM", referencedColumnName = "PREFITEM")
+    private ProductContent productContent;
 }
