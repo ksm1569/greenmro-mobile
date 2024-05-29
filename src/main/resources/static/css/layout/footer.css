@@ -8,7 +8,7 @@
 }
 
 .fixed-bottom .nav-link img {
-    width: 24px;
+    width: 38px;
     height: auto;
 }
 
@@ -22,6 +22,7 @@
         padding: 0 10px;
     }
     .fixed-bottom .nav-link img {
-        width: 20px;
+        width: 32px;
+        height: auto;
     }
 }

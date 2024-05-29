@@ -47,7 +47,7 @@ body {
 }
 
 #grid-container div p {
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 0;
     font-size: 0.8rem;
     color: #000;
@@ -77,9 +77,9 @@ body {
     margin: 0; /* 기본 마진 제거 */
 }
 
-.pop-load-more-btn {
+.load-more-btn {
     padding: 2px 13px;
-    background-color: #000;
+    background-color: #42B672;
     color: #fff;
     font-size: 14px;
     border: none;
@@ -90,42 +90,8 @@ body {
     margin-right: 5px;
 }
 
-.pop-load-more-btn:hover {
-    background-color: #444;
-}
-
-.un-reg-load-more-btn {
-    padding: 2px 13px;
-    background-color: #000;
-    color: #fff;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 5px;
-    margin-right: 5px;
-}
-
-.un-reg-load-more-btn:hover {
-    background-color: #444;
-}
-
-.reg-load-more-btn {
-    padding: 2px 13px;
-    background-color: #000;
-    color: #fff;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 5px;
-    margin-right: 5px;
-}
-
-.reg-load-more-btn:hover {
-    background-color: #444;
+.load-more-btn:hover {
+    background-color: #01D779;
 }
 
 .pop-products-container {
@@ -152,7 +118,7 @@ body {
     transform: translateY(-50%);
     cursor: pointer;
     z-index: 10;
-    background: #000; /* 검은색 배경 */
+    background: rgba(66, 182, 114, 0.6);
     color: #fff; /* 흰색 텍스트 */
     width: 30px;
     height: 30px;
