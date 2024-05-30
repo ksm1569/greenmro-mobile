@@ -255,3 +255,12 @@ body {
     margin: 0; /* 텍스트의 여백 제거 */
     overflow: hidden; /* 텍스트가 넘칠 경우 숨김 */
 }
+
+.product-link {
+    color: inherit; /* 상위 요소의 텍스트 색상을 상속받습니다. */
+    text-decoration: none; /* 밑줄 제거 */
+}
+
+.product-link:hover {
+    color: #70DC9D;
+}

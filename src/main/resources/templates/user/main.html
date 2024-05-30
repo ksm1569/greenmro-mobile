@@ -80,7 +80,6 @@
     </div>
 
     <div th:replace="~{layout/footer :: footer}"></div>
-
     <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
 
     <script>
@@ -192,8 +191,10 @@
                 products.forEach(function(product) {
                     container.append(`
                         <div class="product-pop-item">
-                            <img src="${product.bigImage}" alt="${product.pname}">
-                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            <a href="product/detail/${product.prefItem}" class="product-link">
+                                <img src="${product.bigImage}" alt="${product.pname}">
+                                <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            </a>
                         </div>
                     `);
                 });
@@ -204,8 +205,10 @@
                 products.forEach(function(product) {
                     container.append(`
                         <div class="product-un-reg-item">
-                            <img src="${product.bigImage}" alt="${product.pname}">
-                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            <a href="product/detail/${product.prefItem}" class="product-link">
+                                <img src="${product.bigImage}" alt="${product.pname}">
+                                <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            </a>
                         </div>
                     `);
                 });
@@ -216,8 +219,10 @@
                 products.forEach(function(product) {
                     container.append(`
                         <div class="product-reg-item">
-                            <img src="${product.bigImage}" alt="${product.pname}">
-                            <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            <a href="product/detail/${product.prefItem}" class="product-link">
+                                <img src="${product.bigImage}" alt="${product.pname}">
+                                <p>${truncateString(product.pname, 26)}<br>₩${product.bprice.toLocaleString()}</p>
+                            </a>
                         </div>
                     `);
                 });

@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailResponseDto {
+    private Long manufactureId;
+    private String manufacturer;
     private String bigImage;
     private String bigImageSub1;
     private String bigImageSub2;

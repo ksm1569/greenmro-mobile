@@ -228,9 +228,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                 .where(buyerPrice.product.prefItem.eq(prefItem),
                         buyerPrice.eDate.goe(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)));
 
-        Optional<ProductDetailResponseDto> results = Optional.ofNullable(queryFactory
+        List<ProductDetailResponseDto> results = queryFactory
                 .select(Projections.constructor(
                         ProductDetailResponseDto.class,
+                        product.manufactureId,
+                        product.manufacturer,
                         product.bigImage,
                         product.bigImageSub1,
                         product.bigImageSub2,
@@ -244,19 +246,29 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                 ))
                 .from(product)
                 .innerJoin(productContent).on(product.prefItem.eq(productContent.prefItem))
-                .leftJoin(buyerPrice).on(product.prefItem.eq(buyerPrice.product.prefItem).and(buyerPrice.uCompanyRef.eq(companyId)))
+                .leftJoin(buyerPrice).on(product.prefItem.eq(buyerPrice.product.prefItem)
+                        .and(buyerPrice.uCompanyRef.eq(companyId))
+                        .and(buyerPrice.eDate.goe(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE))))
                 .where(product.prefItem.eq(prefItem))
-                .fetchOne());
+                .fetch();
+
+
+        if (results.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_PRODUCT);
+        }
 
         // todo 이미지 서버 이전 시 제거
-        ProductDetailResponseDto responseDto = results.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PRODUCT));
+        // todo 오라클 버전업 후 쿼리문 수정필요
+        ProductDetailResponseDto responseDto = results.get(0);
         responseDto.setBigImage(formatImageUrl(responseDto.getBigImage()));
         responseDto.setBigImageSub1(formatImageUrl(responseDto.getBigImageSub1()));
         responseDto.setBigImageSub2(formatImageUrl(responseDto.getBigImageSub2()));
         responseDto.setBigImageSub3(formatImageUrl(responseDto.getBigImageSub3()));
 
         // todo 상세 이미지 - 이미지 서버 이전 시 내부 데이터 경로 수정 후 제거
-        responseDto.setContents(updateImagePaths(responseDto.getContents()));
+        if (responseDto.getContents() != null) {
+            responseDto.setContents(updateImagePaths(responseDto.getContents()));
+        }
 
         return responseDto;
     }

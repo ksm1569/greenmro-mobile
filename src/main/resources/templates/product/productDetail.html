@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/product/productDetail.css}">
+</head>
+<body>
+    <div th:replace="~{layout/header :: header}"></div>
+
+    <div class="main-content">
+        <div class="product-images-slider">
+            <!-- 이미지 슬라이더 컨테이너 -->
+        </div>
+
+        <div class="product-details">
+            <p id="product-manufacturer"></p>
+            <span id="product-name"></span>
+            <p id="product-price"></p>
+        </div>
+
+        <div class="production-selling-navigation__border"></div>
+
+        <div class="product-tabs">
+            <ul class="tab-list">
+                <li class="tab-item active" data-tab="tab-info">상품정보</li>
+                <li class="tab-item" data-tab="tab-review">리뷰</li>
+                <li class="tab-item" data-tab="tab-inquiry">문의</li>
+                <li class="tab-item" data-tab="tab-delivery">배송/환불</li>
+                <li class="tab-item" data-tab="tab-recommend">추천</li>
+            </ul>
+            <div class="tab-content active" id="tab-info">
+                <div class="product-description" id="product-description">
+                    <!-- 상품 상세 설명 -->
+                </div>
+            </div>
+            <div class="tab-content" id="tab-review">리뷰 내용이 여기에 들어갑니다.</div>
+            <div class="tab-content" id="tab-inquiry">문의 내용이 여기에 들어갑니다.</div>
+            <div class="tab-content" id="tab-delivery">배송/환불 정보가 여기에 들어갑니다.</div>
+            <div class="tab-content" id="tab-recommend">추천 내용이 여기에 들어갑니다.</div>
+        </div>
+    </div>
+    <div th:replace="~{layout/footer :: footer}"></div>
+    <div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+    <script th:src="@{/js/common/common.js}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-item');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => {
+                        c.classList.remove('active');
+                        if (c.id === tab.getAttribute('data-tab')) {
+                            c.classList.add('active');
+                        }
+                    });
+                    tab.classList.add('active');
+                });
+            });
+
+            let prefItem = [[${prefItem}]];
+
+            fetchProductDetails(prefItem, function(data) {
+                console.log(data);
+                renderProductDetails(data);
+            });
+        });
+
+        function renderProductDetails(data) {
+            const imageElements = [];
+            const images = [data.bigImage, data.bigImageSub1, data.bigImageSub2, data.bigImageSub3];
+            images.forEach(img => {
+                if (img) {
+                    imageElements.push(`<div><img src="${img}" alt="Product Image" style="width:100%;"></div>`);
+                }
+            });
+
+            $('.product-images-slider').html(imageElements.join('')).slick({
+                    dots: true,
+                    infinite: true,
+                    speed: 300,
+                    slidesToShow: 1,
+                    adaptiveHeight: true
+                });
+
+                $('#product-manufacturer').text(data.manufacturer);
+                $('#product-name').text(data.pname);
+                $('#product-standard').text(data.pdescription);
+                $('#product-price').text(`₩${data.bprice.toLocaleString()}원`);
+                $('#product-description').html(data.contents);
+            }
+    </script>
+</body>
+</html>

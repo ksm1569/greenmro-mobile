@@ -1,0 +1,101 @@
+.main-content {
+    margin-bottom: 150px;
+}
+
+/* 이미지 슬라이더 스타일 */
+.product-images-slider img {
+    width: 350px;
+    height: 350px;
+}
+
+#product-manufacturer {
+    color: #828c94;
+    height: 10px;
+}
+
+#product-name {
+    margin-top: 0;
+    font-weight: 500;
+    height: 20px;
+    font-size: 17px;
+}
+
+#product-price {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.product-details {
+    margin: auto;
+    padding: 0 10px; /* 패딩 추가 */
+}
+.image > img, img{
+    width: 100%;
+}
+
+
+.product-description {
+    width: 100%; /* 너비를 화면 전체로 설정 */
+    padding: 5px 15px; /* 적절한 패딩으로 내용이 가장자리에 닿지 않도록 함 */
+    box-sizing: border-box; /* 패딩과 보더가 너비에 포함되도록 설정 */
+    overflow-x: hidden; /* 가로 스크롤은 숨김 */
+    word-wrap: break-word; /* 단어가 너무 길면 자동으로 줄 바꿈 */
+}
+
+body, html {
+    height: auto; /* body와 html의 높이를 자동으로 설정하여 콘텐츠 크기에 맞춤 */
+    overflow-x: hidden; /* 가로 스크롤 전체 숨김 */
+}
+
+.product-tabs .tab-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    background-color: #f1f1f1;
+}
+
+.tab-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    background-color: #f1f1f1;
+}
+
+.product-tabs .tab-item {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.product-tabs .tab-item.active {
+    background-color: #fff;
+    border-bottom: 2px solid #83C69C;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+    border-top: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.production-selling-navigation__border {
+    border-top: 5px solid #ededed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .product-details, .product-description {
+        max-width: 95%; /* 모바일 화면에서는 너비를 95%로 조정 */
+    }
+
+    .product-images-slider img {
+        width: 350px; /* 모바일에서는 이미지 너비를 동적으로 조정 */
+        height: 350px; /* 높이를 자동으로 조정하여 비율 유지 */
+    }
+}
