@@ -13,6 +13,13 @@ body {
     margin-bottom: 130px;
 }
 
+.main-content h5 {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+    color: #000;
+}
+
 #grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -23,13 +30,13 @@ body {
 
 .image-container {
     width: 100%;
-    background-color: #DADADA;
+    background-color: rgba(241, 243, 178, 0.3);
     padding: 6px;
     display: flex;
     flex-direction: column;  /* 요소들을 수직으로 쌓기 */
     justify-content: center; /* 세로 방향으로 중앙 정렬 */
     align-items: center;     /* 가로 방향으로 중앙 정렬 */
-    border-radius: 17px;
+    border-radius: 22px;
 }
 
 #grid-container > div {

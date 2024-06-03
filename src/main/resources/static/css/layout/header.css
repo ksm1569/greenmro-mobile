@@ -6,6 +6,15 @@
     border: none;
 }
 
+.menu-icon {
+    height: 46px;
+    width: 60px;
+}
+
+.navbar-toggler {
+    padding: 0;
+}
+
 .navbar-toggler:focus {
     text-decoration: none;
     outline: none;
@@ -27,6 +36,7 @@
     cursor: pointer;
     font-size: 1.5em;
     position: absolute;
+    color: rgba(66, 182, 114);
 }
 
 .navbar-brand {
