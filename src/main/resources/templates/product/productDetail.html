@@ -16,6 +16,7 @@
             <p id="product-manufacturer"></p>
             <span id="product-name"></span>
             <p id="product-price"></p>
+            <p id="product-delCharge"></p>
         </div>
 
         <div class="production-selling-navigation__border"></div>
@@ -37,6 +38,16 @@
             <div class="tab-content" id="tab-inquiry">문의 내용이 여기에 들어갑니다.</div>
             <div class="tab-content" id="tab-delivery">배송/환불 정보가 여기에 들어갑니다.</div>
             <div class="tab-content" id="tab-recommend">추천 내용이 여기에 들어갑니다.</div>
+        </div>
+
+        <div class="fixed-footer" id="checkout-footer">
+            <div class="payment-info" id="total-info">
+                <span id="item-price"></span>
+                <span id="total-price"></span>
+            </div>
+
+            <button class="cart-button" onclick="alert('장바구니 개발중')">장바구니</button>
+            <button class="pay-button" onclick="alert('결제하기 개발중')">결제하기</button>
         </div>
     </div>
     <div th:replace="~{layout/footer :: footer}"></div>
@@ -91,7 +102,17 @@
                 $('#product-standard').text(data.pdescription);
                 $('#product-price').text(`₩${data.bprice.toLocaleString()}원`);
                 $('#product-description').html(data.contents);
-            }
+
+                let deliveryFee = data.delChargeYn === 'Y' ? data.delCharge : 0;
+                let totalPrice = data.bprice + deliveryFee;
+
+                $('#item-price').text('상품 ' + formatNumber(data.bprice) + ' + 배송비 ' + formatNumber(deliveryFee) + '원 = ');
+                $('#total-price').text(formatNumber(totalPrice) + '원');
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
     </script>
 </body>
 </html>

@@ -5,10 +5,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.smsoft.greenmromobile.domain.product.dto.*;
-import com.smsoft.greenmromobile.domain.product.entity.QBuyerPrice;
-import com.smsoft.greenmromobile.domain.product.entity.QPopularProduct;
-import com.smsoft.greenmromobile.domain.product.entity.QProduct;
-import com.smsoft.greenmromobile.domain.product.entity.QProductContent;
+import com.smsoft.greenmromobile.domain.product.entity.*;
 import com.smsoft.greenmromobile.global.error.ErrorCode;
 import com.smsoft.greenmromobile.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -220,6 +217,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         QProduct product = QProduct.product;
         QProductContent productContent = QProductContent.productContent;
         QBuyerPrice buyerPrice = QBuyerPrice.buyerPrice;
+        QVendorMasterInfo vendorMasterInfo = QVendorMasterInfo.vendorMasterInfo;
 
         // 최대 가격을 조회하는 서브 쿼리
         JPQLQuery<BigDecimal> maxPriceSubQuery = JPAExpressions
@@ -242,13 +240,18 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                         product.pname,
                         product.description,
                         buyerPrice.bplRefItem,
-                        buyerPrice.bprice.coalesce(maxPriceSubQuery).as("bprice")  // 최대 가격을 사용하여 null 대체
+                        buyerPrice.bprice.coalesce(maxPriceSubQuery).as("bprice"),
+                        vendorMasterInfo.delChargeYn,
+                        vendorMasterInfo.delCharge,
+                        vendorMasterInfo.doseoDelChargeYn,
+                        vendorMasterInfo.doseoDelCharge
                 ))
                 .from(product)
                 .innerJoin(productContent).on(product.prefItem.eq(productContent.prefItem))
                 .leftJoin(buyerPrice).on(product.prefItem.eq(buyerPrice.product.prefItem)
                         .and(buyerPrice.uCompanyRef.eq(companyId))
                         .and(buyerPrice.eDate.goe(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE))))
+                .leftJoin(buyerPrice.vendorMasterInfo, vendorMasterInfo)
                 .where(product.prefItem.eq(prefItem))
                 .fetch();
 

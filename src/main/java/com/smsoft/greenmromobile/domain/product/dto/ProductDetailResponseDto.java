@@ -24,4 +24,8 @@ public class ProductDetailResponseDto {
     private String pDescription;
     private Long bplRefItem;
     private BigDecimal bprice;
+    private String delChargeYn;
+    private BigDecimal delCharge;
+    private String doseoDelChargeYn;
+    private BigDecimal doseoDelCharge;
 }
