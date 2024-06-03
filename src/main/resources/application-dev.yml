@@ -19,3 +19,9 @@ jwt:
   secret: ENC(LLLV9Lbw21ApG0uwNH1TjsW9yqKId0koLgEO7bPFsUDjDAkqaiUhnCvGYvGpnVIun6XJldoBzUEMckjIlwIQ3kB+2g8d4Jj/)
   expiration: 28800 # 8시간 (8*60*60)
   refreshTokenExpiration: 604800 # 1주일 (7*24*60*60)
+
+logging:
+  level:
+    org.springframework.web: WARN
+    com.smsoft.greenmromobile.global.aspect: DEBUG
+
