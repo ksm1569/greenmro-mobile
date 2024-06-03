@@ -1,5 +1,5 @@
 body {
-    background-color: #e9ecef;
+    background-color: #FAFAFA;
 }
 
 #cart-contents {
@@ -191,6 +191,8 @@ body {
     border-color: #4CAF50;
     width: 30px;
     height: 30px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 .btn-success:hover{
     color: #fff;
