@@ -18,8 +18,9 @@
 ### 이미지
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/f3d98355-a09b-4706-aaf5-939d3e4d18f9)
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/be59378e-798b-40c4-9624-a33f7ca3f01c)
-![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/a33dfffb-f25b-4faf-9b00-749e9c939be1)
-![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/1cd76173-b69f-48f8-9be9-37d34f4695e0)
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/8c67a51a-f289-4a5d-b85f-69e98b494b21)
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/d3192e5d-f8b9-4bea-aa85-1d924504e634)
+![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/a970488b-1248-4e08-b6ee-4ece78317e5f)
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/5488f55c-95b4-4a9c-914c-15556fee80e5)
 ![image](https://github.com/ksm1569/greenmro-mobile/assets/34292113/f86874d2-c6d1-427a-b630-acb921e034d4)
 
