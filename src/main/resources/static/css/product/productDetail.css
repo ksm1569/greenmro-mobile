@@ -23,6 +23,7 @@
 #product-price {
     font-size: 20px;
     font-weight: 700;
+    margin-bottom: 0;
 }
 
 .product-details {
@@ -33,6 +34,56 @@
     width: 100%;
 }
 
+.product-delivery {
+    display: flex;
+    height: 25px;
+    margin-top: 5px;
+}
+
+.product-delivery-title {
+    flex-basis: 42px;
+    color: #828c94;
+}
+
+.btn-decrease {
+    width: 22px;
+    height: 28px;
+    padding: .24rem .4rem
+}
+
+.btn-increase {
+    width: 22px;
+    height: 28px;
+    padding: .24rem .4rem;
+}
+
+.quantity-input {
+    width: 28px;
+    height: 28px;
+}
+
+.product-qty {
+    display: flex;
+    height: 25px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+}
+
+.product-qty-title {
+    flex-basis: 42px;
+    color: #828c94;
+}
+
+.product-qty-stock-title {
+    margin-left: 10px;
+    margin-right: 2px;
+    color: #828c94;
+}
+
+.product-qty-min-title {
+    margin-right: 2px;
+    color: #828c94;
+}
 
 .product-description {
     width: 100%; /* 너비를 화면 전체로 설정 */
@@ -40,6 +91,11 @@
     box-sizing: border-box; /* 패딩과 보더가 너비에 포함되도록 설정 */
     overflow-x: hidden; /* 가로 스크롤은 숨김 */
     word-wrap: break-word; /* 단어가 너무 길면 자동으로 줄 바꿈 */
+}
+
+.form-control {
+    padding: 0;
+    text-align: center;
 }
 
 body, html {

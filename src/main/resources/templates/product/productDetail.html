@@ -16,7 +16,39 @@
             <p id="product-manufacturer"></p>
             <span id="product-name"></span>
             <p id="product-price"></p>
-            <p id="product-delCharge"></p>
+
+            <div class="product-delivery">
+                <div class="product-delivery-title">
+                    <span>배송</span>
+                </div>
+
+                <div class="product-delivery-content">
+                    <span id="product-delCharge"></span>
+                </div>
+            </div>
+
+            <div class="product-qty">
+                <div class="product-qty-title">
+                    <span>수량</span>
+                </div>
+
+                <div class="product-qty-content">
+                    <div>
+                        <button class="btn btn-success btn-sm btn-decrease">-</button>
+                        <label>
+                            <input type="text" class="form-control quantity-input" id="quantity-input" readonly="readonly">
+                        </label>
+                        <button class="btn btn-success btn-sm btn-increase">+</button>
+
+                        <span class="product-qty-stock-title">재고</span>
+                        <span id="product-qty-stock"></span>
+                        <span>/</span>
+                        <span class="product-qty-min-title">최소</span>
+                        <span id="product-qty-min"></span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="production-selling-navigation__border"></div>
@@ -47,7 +79,7 @@
             </div>
 
             <button class="cart-button" onclick="alert('장바구니 개발중')">장바구니</button>
-            <button class="pay-button" onclick="alert('결제하기 개발중')">결제하기</button>
+            <button class="pay-button" onclick="alert('구매하기 개발중')">구매하기</button>
         </div>
     </div>
     <div th:replace="~{layout/footer :: footer}"></div>
@@ -55,6 +87,8 @@
     <script th:src="@{/js/common/common.js}"></script>
 
     <script>
+        let productDetails = {};
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.tab-item');
             const contents = document.querySelectorAll('.tab-content');
@@ -76,20 +110,26 @@
 
             fetchProductDetails(prefItem, function(data) {
                 console.log(data);
-                renderProductDetails(data);
-            });
-        });
+                let minQty = data.minQty || 1;
 
-        function renderProductDetails(data) {
-            const imageElements = [];
-            const images = [data.bigImage, data.bigImageSub1, data.bigImageSub2, data.bigImageSub3];
-            images.forEach(img => {
-                if (img) {
-                    imageElements.push(`<div><img src="${img}" alt="Product Image" style="width:100%;"></div>`);
-                }
-            });
+                productDetails = {
+                    images: [data.bigImage, data.bigImageSub1, data.bigImageSub2, data.bigImageSub3],
+                    manufacturer: data.manufacturer,
+                    pname: data.pname,
+                    pdescription: data.pdescription,
+                    bprice: data.bprice,
+                    contents: data.contents,
+                    delCharge: data.delChargeYn === 'Y' ? data.delCharge : 0,
+                    stockQty: data.stockQty === null || data.stockQty <= 0 ? 0 : data.stockQty,
+                    minQty: minQty,
+                    quantity: data.stockQty > 0 ? minQty : 0
+                };
 
-            $('.product-images-slider').html(imageElements.join('')).slick({
+                const imageElements = productDetails.images.map(img => {
+                    return img ? `<div><img src="${img}" alt="Product Image" style="width:100%;"></div>` : '';
+                });
+
+                $('.product-images-slider').html(imageElements.join('')).slick({
                     dots: true,
                     infinite: true,
                     speed: 300,
@@ -97,17 +137,43 @@
                     adaptiveHeight: true
                 });
 
-                $('#product-manufacturer').text(data.manufacturer);
-                $('#product-name').text(data.pname);
-                $('#product-standard').text(data.pdescription);
-                $('#product-price').text(`₩${data.bprice.toLocaleString()}원`);
-                $('#product-description').html(data.contents);
+                updateUI();
+                attachEventListeners();
+            });
+        });
 
-                let deliveryFee = data.delChargeYn === 'Y' ? data.delCharge : 0;
-                let totalPrice = data.bprice + deliveryFee;
+        function updateUI() {
+            $('#product-description').html(productDetails.contents);
+            $('#product-manufacturer').text(productDetails.manufacturer);
+            $('#product-name').text(productDetails.pname);
+            $('#product-standard').text(productDetails.pdescription);
+            $('#product-price').text(`₩${productDetails.bprice.toLocaleString()}원`);
+            $('#product-delCharge').text(productDetails.delCharge === 0 ? '무료' : formatNumber(productDetails.delCharge));
+            $('#product-qty-stock').text(formatNumber(productDetails.stockQty) + '개');
+            $('#product-qty-min').text(formatNumber(productDetails.minQty) + '개');
+            $('#item-price').text('상품 ' + formatNumber(productDetails.bprice) + ' + 배송비 ' + formatNumber(productDetails.delCharge) + '원 = ');
+            $('#total-price').text(formatNumber(calculateTotalPrice()) + '원');
+            $('#quantity-input').val(productDetails.quantity).attr('min', productDetails.minQty);
+        }
 
-                $('#item-price').text('상품 ' + formatNumber(data.bprice) + ' + 배송비 ' + formatNumber(deliveryFee) + '원 = ');
-                $('#total-price').text(formatNumber(totalPrice) + '원');
+        function calculateTotalPrice() {
+            return (productDetails.bprice * productDetails.quantity) + productDetails.delCharge;
+        }
+
+        function attachEventListeners() {
+            $('.btn-increase').on('click', function() {
+                if (productDetails.quantity < productDetails.stockQty) {
+                    productDetails.quantity++;
+                    updateUI();
+                }
+            });
+
+            $('.btn-decrease').on('click', function() {
+                if (productDetails.quantity > productDetails.minQty) {
+                    productDetails.quantity--;
+                    updateUI();
+                }
+            });
         }
 
         function formatNumber(num) {

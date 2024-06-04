@@ -244,7 +244,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                         vendorMasterInfo.delChargeYn,
                         vendorMasterInfo.delCharge,
                         vendorMasterInfo.doseoDelChargeYn,
-                        vendorMasterInfo.doseoDelCharge
+                        vendorMasterInfo.doseoDelCharge,
+                        product.stockQty,
+                        buyerPrice.minQty
                 ))
                 .from(product)
                 .innerJoin(productContent).on(product.prefItem.eq(productContent.prefItem))

@@ -28,4 +28,6 @@ public class ProductDetailResponseDto {
     private BigDecimal delCharge;
     private String doseoDelChargeYn;
     private BigDecimal doseoDelCharge;
+    private Long stockQty;
+    private BigDecimal minQty;
 }
