@@ -10,12 +10,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/products")
 public class ProductApiController {
     private final JwtUtil jwtUtil;
     private final ProductService productService;
+
+    @GetMapping("/search")
+    public ResponseEntity<?> productSearch(@RequestParam String productName) throws IOException {
+        return ResponseEntity.ok(productService.productSearch("products_search", productName));
+    }
 
     @GetMapping("/registered")
     public ResponseEntity<?> getRegisteredProducts(

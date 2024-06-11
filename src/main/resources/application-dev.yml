@@ -1,3 +1,6 @@
+server:
+  port: 9090
+
 spring:
   datasource:
     url: ENC(9j5kBbMKwH0kUvOEC0cTjaMAU8rSB2XkR0M1/O8ACCCZke2z9xPjmxhzIyNP9bF3)
@@ -11,9 +14,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.OracleDialect
         default_batch_fetch_size: 500
-
-server:
-  port: 9090
+  elasticsearch:
+    uris: ENC(asZY/7o74JzA3rJn71c/CynCL6u2bsSkjwBuu14uN0s=)
+    username: ENC(OsMU6GxAfRNtYQwQmhMTgA==)
+    password: ENC(u579CLXLqUv9bxouIV9BsUYwpq+fFkmrSYKbX2BF8fY=)
 
 jwt:
   secret: ENC(LLLV9Lbw21ApG0uwNH1TjsW9yqKId0koLgEO7bPFsUDjDAkqaiUhnCvGYvGpnVIun6XJldoBzUEMckjIlwIQ3kB+2g8d4Jj/)
