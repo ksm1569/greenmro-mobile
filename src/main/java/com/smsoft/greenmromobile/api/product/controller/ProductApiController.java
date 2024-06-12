@@ -20,8 +20,8 @@ public class ProductApiController {
     private final ProductService productService;
 
     @GetMapping("/search")
-    public ResponseEntity<?> productSearch(@RequestParam String productName) throws IOException {
-        return ResponseEntity.ok(productService.productSearch("products_search", productName));
+    public ResponseEntity<?> productSearch(@RequestParam String productName, @RequestParam Integer size) throws IOException {
+        return ResponseEntity.ok(productService.productSearch("products_search", productName, size));
     }
 
     @GetMapping("/registered")

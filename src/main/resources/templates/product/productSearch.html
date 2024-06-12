@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/product/productSearch.css}">
+</head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<div class="search-container">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="상품 검색" autocomplete="off">
+        <span id="clearButton" style="display: none;">&times;</span>
+        <button id="cancelButton">취소</button>
+    </div>
+    <div id="resultsContainer"></div>
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+
+<script>
+    $(document).ready(function() {
+        const $searchInput = $('#searchInput');
+        const $clearButton = $('#clearButton');
+        const $cancelButton = $('#cancelButton');
+        const $resultsContainer = $('#resultsContainer');
+
+        $searchInput.on('keydown', function(event) {
+            const functionKeys = [
+                'F1', 'F2', 'F3', 'F4', 'F5', 'F6',
+                'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+                'Insert', 'Home', 'End', 'PageUp', 'PageDown',
+                'Shift', 'Control', 'Alt', 'CapsLock', 'Escape'
+            ];
+
+            if (functionKeys.includes(event.key)) {
+                event.preventDefault();
+                return false;
+            }
+        });
+
+        $searchInput.on('input', function() {
+            const query = $searchInput.val().trim();
+            $clearButton.css('display', query ? 'block' : 'none');
+
+            if (!query) {
+                $resultsContainer.empty();
+                return;
+            }
+
+            $.ajax({
+                url: `/api/products/search`,
+                method: 'GET',
+                data: {
+                    productName: query,
+                    size: 20
+                },
+                success: function(data) {
+                    console.log(data);
+                    $resultsContainer.empty();
+                    const words = query.split(/\s+/);
+                    data.products.forEach(product => {
+                        let highlightedText = product.pname;
+                        words.forEach(word => {
+                            const searchRegex = new RegExp(word, 'gi');
+                            highlightedText = highlightedText.replace(searchRegex, match => `<span class="highlight">${match}</span>`);
+                        });
+                        const productElement = $('<div>').html(`<div>${highlightedText}</div>`);
+                        $resultsContainer.append(productElement);
+                    });
+                },
+                error: function(error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        });
+
+        $clearButton.on('click', function() {
+            $searchInput.val('');
+            $clearButton.hide();
+            $resultsContainer.empty();
+        });
+
+        $cancelButton.on('click', function() {
+            window.history.back();
+        });
+    });
+</script>
+</body>
+</html>

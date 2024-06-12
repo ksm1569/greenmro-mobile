@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,21 +26,35 @@ public class ProductService {
     private final ProductCustomRepository productCustomRepository;
     private final ElasticsearchClient elasticsearchClient;
 
-    public ElasticProductSearchResponseDto productSearch(String index, String queryText) throws IOException {
-        String wildcardText = "*" + queryText + "*";
-        log.info("Performing search on index: {} with query: {}", index, wildcardText);
+    public ElasticProductSearchResponseDto productSearch(String index, String queryText, Integer size) throws IOException {
+        String[] keywords = queryText.split("\\s+");
+        String queryPattern;
+
+        if (keywords.length > 1) {
+            queryPattern = Arrays.stream(keywords)
+                    .map(keyword -> "*" + keyword + "*")
+                    .collect(Collectors.joining(" OR "));
+        } else {
+            queryPattern = "*" + queryText + "*";
+        }
+
+        log.info("Performing search on index: {} with queryText: {} and queryPattern: {} and size: {}", index, queryText, queryPattern, size);
+
         SearchRequest request = SearchRequest.of(s -> s
                 .index(index)
                 .query(q -> q
                         .queryString(qs -> qs
                                 .defaultField("ptechdescription")
-                                .query(wildcardText)
+                                .query(queryPattern)
+                                .analyzeWildcard(true)  // 와일드카드 분석 활성화
                         )
                 )
-                .size(17)
+                .size(size)
         );
 
         SearchResponse<Object> response = elasticsearchClient.search(request, Object.class);
+        log.info("response: {}", response.toString());
+
         List<ElasticProductResponseDto> products = response.hits().hits().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
@@ -48,7 +63,7 @@ public class ProductService {
         searchResponseDto.setProducts(products);
         searchResponseDto.setCurrentPage(1);
         searchResponseDto.setTotalItems((int) response.hits().total().value());
-        searchResponseDto.setTotalPages(calculateTotalPages(response.hits().total().value()));
+        searchResponseDto.setTotalPages(calculateTotalPages(response.hits().total().value(), size));
 
         return searchResponseDto;
     }
@@ -61,7 +76,7 @@ public class ProductService {
 
         Object prefItemObj = source.get("prefitem");
         if (prefItemObj instanceof Integer) {
-            dto.setPrefitem(((Integer) prefItemObj).longValue());  // Integer를 Long으로 변환
+            dto.setPrefitem(((Integer) prefItemObj).longValue());
         } else if (prefItemObj instanceof Long) {
             dto.setPrefitem((Long) prefItemObj);
         } else {
@@ -71,16 +86,9 @@ public class ProductService {
         return dto;
     }
 
-    private int calculateTotalPages(long totalItems) {
-        return (int) Math.ceil((double) totalItems / 17);
-    }
-
-    private ElasticProductResponseDto mapToDto(Map<String, Object> source) {
-        ElasticProductResponseDto dto = new ElasticProductResponseDto();
-        dto.setPrefitem((Long) source.get("prefitem"));
-        dto.setPname((String) source.get("pname"));
-        dto.setPtechdescription((String) source.get("ptechdescription"));
-        return dto;
+    private int calculateTotalPages(long totalItems, Integer size) {
+        if (size==0) size = 1;
+        return (int) Math.ceil((double) totalItems / size);
     }
 
     @Transactional(readOnly = true)

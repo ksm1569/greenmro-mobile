@@ -12,4 +12,9 @@ public class ProductController {
         model.addAttribute("prefItem", prefItem);
         return "product/productDetail";
     }
+
+    @GetMapping("/product/search")
+    public String productSearch() {
+        return "product/productSearch";
+    }
 }
