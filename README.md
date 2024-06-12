@@ -2,7 +2,7 @@
 - Java 17
 - Spring Boot 3.2.4 - Spring 6.1.5
 - Spring Data Jpa 3.2.4 - hibernate 6.4.4
-- Spring Data Jpa Elastic 3.2.4
+- Spring Data Jpa ElasticSearch 3.2.4
 - elasticsearch-java 8.14.0
 - Querydsl 5.0.0
 - Spring Security 6.2.3
