@@ -13,6 +13,9 @@
         <span id="clearButton" style="display: none;">&times;</span>
         <button id="cancelButton">취소</button>
     </div>
+
+    <div id="recentSearchesContainer" class="recent-searches">
+    </div>
     <div id="resultsContainer"></div>
 </div>
 
@@ -25,6 +28,7 @@
         const $clearButton = $('#clearButton');
         const $cancelButton = $('#cancelButton');
         const $resultsContainer = $('#resultsContainer');
+        const $recentSearchesContainer = $('#recentSearchesContainer');
 
         $searchInput.on('keydown', function(event) {
             const functionKeys = [
@@ -38,6 +42,13 @@
                 event.preventDefault();
                 return false;
             }
+
+            if (event.key === "Enter") {
+                const query = $(this).val().trim();
+                if (query) {
+                    saveRecentSearch(query);
+                }
+            }
         });
 
         $searchInput.on('input', function() {
@@ -45,10 +56,38 @@
             $clearButton.css('display', query ? 'block' : 'none');
 
             if (!query) {
-                $resultsContainer.empty();
+                $resultsContainer.hide();
+                updateRecentSearches();
+                $recentSearchesContainer.show();
                 return;
+            } else {
+                $recentSearchesContainer.hide();
+                performSearch(query);
+                $resultsContainer.show();
             }
 
+        });
+
+        $clearButton.on('click', function() {
+            $searchInput.val('');
+            $clearButton.hide();
+            $resultsContainer.empty();
+            $resultsContainer.hide();
+
+            updateRecentSearches();
+            $recentSearchesContainer.show();
+        });
+
+        $cancelButton.on('click', function() {
+            window.history.back();
+        });
+
+        $recentSearchesContainer.on('click', '.clear-all', function() {
+            localStorage.removeItem('recentSearches');
+            updateRecentSearches();
+        });
+
+        function performSearch(query) {
             $.ajax({
                 url: `/api/products/search`,
                 method: 'GET',
@@ -59,32 +98,57 @@
                 success: function(data) {
                     console.log(data);
                     $resultsContainer.empty();
-                    const words = query.split(/\s+/);
                     data.products.forEach(product => {
                         let highlightedText = product.pname;
-                        words.forEach(word => {
-                            const searchRegex = new RegExp(word, 'gi');
-                            highlightedText = highlightedText.replace(searchRegex, match => `<span class="highlight">${match}</span>`);
-                        });
-                        const productElement = $('<div>').html(`<div>${highlightedText}</div>`);
-                        $resultsContainer.append(productElement);
+                        const searchRegex = new RegExp(query.split(/\s+/).join('|'), 'gi');
+                        highlightedText = highlightedText.replace(searchRegex, match => `<span class="highlight">${match}</span>`);
+                        $resultsContainer.append($('<div>').html(highlightedText));
                     });
                 },
                 error: function(error) {
                     console.error('Error fetching data:', error);
                 }
             });
-        });
+        }
 
-        $clearButton.on('click', function() {
-            $searchInput.val('');
-            $clearButton.hide();
-            $resultsContainer.empty();
-        });
+        function saveRecentSearch(query) {
+            let searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            if (!searches.includes(query)) {
+                searches.unshift(query);
+                searches = searches.slice(0, 20);
+                localStorage.setItem('recentSearches', JSON.stringify(searches));
+                updateRecentSearches();
+            }
+        }
 
-        $cancelButton.on('click', function() {
-            window.history.back();
-        });
+        function updateRecentSearches() {
+            const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            if (searches.length === 0) return;
+
+            $recentSearchesContainer.empty().append('<div class="recent-search-header">최근검색어<span class="clear-all">전체삭제</span></div>');
+            searches.forEach((search, index) => {
+                const searchItem = $('<div>').addClass('search-item').text(search);
+                const deleteBtn = $('<span>').addClass('delete-btn').text('×').on('click', function() {
+                    removeSearch(index);
+                });
+                searchItem.append(deleteBtn).appendTo($recentSearchesContainer).on('click', function() {
+                    $recentSearchesContainer.hide();
+                    $resultsContainer.show();
+                    $clearButton.show();
+                    $searchInput.val(search);
+                    performSearch(search);
+                });
+            });
+        }
+
+        function removeSearch(index) {
+            let searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            searches.splice(index, 1);
+            localStorage.setItem('recentSearches', JSON.stringify(searches));
+            updateRecentSearches();
+        }
+
+        updateRecentSearches();
     });
 </script>
 </body>
