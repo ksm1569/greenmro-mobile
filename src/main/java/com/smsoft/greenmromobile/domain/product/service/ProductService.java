@@ -43,10 +43,20 @@ public class ProductService {
         SearchRequest request = SearchRequest.of(s -> s
                 .index(index)
                 .query(q -> q
-                        .queryString(qs -> qs
-                                .defaultField("ptechdescription")
-                                .query(queryPattern)
-                                .analyzeWildcard(true)  // 와일드카드 분석 활성화
+                        .bool(b -> b
+                                .must(mu -> mu
+                                        .queryString(qs -> qs
+                                                .defaultField("ptechdescription")
+                                                .query(queryPattern)
+                                                .analyzeWildcard(true)
+                                        )
+                                )
+                                .filter(f -> f
+                                        .term(t -> t
+                                                .field("isuse.keyword")
+                                                .value("Y")
+                                        )
+                                )
                         )
                 )
                 .size(size)
@@ -71,17 +81,10 @@ public class ProductService {
     private ElasticProductResponseDto mapToDto(Hit<Object> hit) {
         Map<String, Object> source = (Map<String, Object>) hit.source();
         ElasticProductResponseDto dto = new ElasticProductResponseDto();
+        dto.setCrefitem((Integer) source.get("crefitem"));
+        dto.setPrefitem((Integer) source.get("prefitem"));
         dto.setPname((String) source.get("pname"));
         dto.setPtechdescription((String) source.get("ptechdescription"));
-
-        Object prefItemObj = source.get("prefitem");
-        if (prefItemObj instanceof Integer) {
-            dto.setPrefitem(((Integer) prefItemObj).longValue());
-        } else if (prefItemObj instanceof Long) {
-            dto.setPrefitem((Long) prefItemObj);
-        } else {
-            throw new IllegalArgumentException("Invalid type for prefitem: " + prefItemObj.getClass().getName());
-        }
 
         return dto;
     }

@@ -6,7 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ElasticProductResponseDto {
-    private Long prefitem;
+    private Integer crefitem;
+    private Integer prefitem;
     private String pname;
     private String ptechdescription;
 }

@@ -59,7 +59,6 @@
                 $resultsContainer.hide();
                 updateRecentSearches();
                 $recentSearchesContainer.show();
-                return;
             } else {
                 $recentSearchesContainer.hide();
                 performSearch(query);
@@ -82,9 +81,30 @@
             window.history.back();
         });
 
-        $recentSearchesContainer.on('click', '.clear-all', function() {
+        $(document).on('click', '.clear-all', function() {
             localStorage.removeItem('recentSearches');
             updateRecentSearches();
+        });
+
+        $(document).on('click', '.search-item', function(event) {
+            if (!$(event.target).hasClass('delete-btn')) {
+                const search = $(this).text().replace('×', '').trim();
+                console.log(search);
+                $recentSearchesContainer.hide();
+                $resultsContainer.show();
+                $clearButton.show();
+                $searchInput.val(search);
+                performSearch(search);
+            }
+        });
+
+        $(document).on('click', '.delete-btn', function(event) {
+            event.stopPropagation();
+
+            const item = $(this).closest('.search-item');
+            const index = $('.search-item').index(item);
+
+            removeSearch(index);
         });
 
         function performSearch(query) {
@@ -123,22 +143,17 @@
 
         function updateRecentSearches() {
             const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-            if (searches.length === 0) return;
-
-            $recentSearchesContainer.empty().append('<div class="recent-search-header">최근검색어<span class="clear-all">전체삭제</span></div>');
-            searches.forEach((search, index) => {
-                const searchItem = $('<div>').addClass('search-item').text(search);
-                const deleteBtn = $('<span>').addClass('delete-btn').text('×').on('click', function() {
-                    removeSearch(index);
+            $recentSearchesContainer.empty();
+            if (searches.length === 0) {
+                $recentSearchesContainer.append('<div></div>');
+            } else {
+                $recentSearchesContainer.append('<div class="recent-search-header">최근검색어<span class="clear-all">전체삭제</span></div>');
+                searches.forEach((search, index) => {
+                    const searchItem = $('<div>').addClass('search-item').text(search);
+                    const deleteBtn = $('<span>').addClass('delete-btn').text('×');
+                    searchItem.append(deleteBtn).appendTo($recentSearchesContainer);
                 });
-                searchItem.append(deleteBtn).appendTo($recentSearchesContainer).on('click', function() {
-                    $recentSearchesContainer.hide();
-                    $resultsContainer.show();
-                    $clearButton.show();
-                    $searchInput.val(search);
-                    performSearch(search);
-                });
-            });
+            }
         }
 
         function removeSearch(index) {
