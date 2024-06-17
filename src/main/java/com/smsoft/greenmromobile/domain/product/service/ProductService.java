@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,16 +28,18 @@ public class ProductService {
     private final ProductCustomRepository productCustomRepository;
     private final ElasticsearchClient elasticsearchClient;
 
-    public ElasticProductSearchResponseDto productRelatedList(String index, String queryText, String pinnedId, Integer size) throws IOException {
+    public ElasticProductSearchResponseDto productRelatedList(String index, String queryText, String pinnedId, Integer size, Integer page) throws IOException {
         String queryPattern = getProductQueryPattern(queryText);
+        int fromIndex = (page - 1) * size;
         log.info("Performing search on index: {} with queryText: {} and queryPattern: {} and size: {}", index, queryText, queryPattern, size);
 
         SearchRequest request = SearchRequest.of(s -> s
                 .index(index)
+                .from(fromIndex)
                 .size(size)
                 .query(q -> q
                         .pinned(p -> p
-                                .ids(Arrays.asList(pinnedId)) // Pinned IDs
+                                .ids(Collections.singletonList(pinnedId))
                                 .organic(
                                         Query.of(qb -> qb
                                                 .bool(b -> b
@@ -60,7 +63,7 @@ public class ProductService {
                 )
         );
 
-        return getElasticProductSearchResponseDto(size, request);
+        return getElasticProductSearchResponseDto(size, page, request);
     }
 
     public ElasticProductSearchResponseDto productSearch(String index, String queryText, Integer size) throws IOException {
@@ -89,10 +92,10 @@ public class ProductService {
                 .size(size)
         );
 
-        return getElasticProductSearchResponseDto(size, request);
+        return getElasticProductSearchResponseDto(size, 1, request);
     }
 
-    private ElasticProductSearchResponseDto getElasticProductSearchResponseDto(Integer size, SearchRequest request) throws IOException {
+    private ElasticProductSearchResponseDto getElasticProductSearchResponseDto(Integer size, Integer page, SearchRequest request) throws IOException {
         SearchResponse<Object> response = elasticsearchClient.search(request, Object.class);
         log.info("response: {}", response.toString());
 
@@ -102,7 +105,7 @@ public class ProductService {
 
         ElasticProductSearchResponseDto searchResponseDto = new ElasticProductSearchResponseDto();
         searchResponseDto.setProducts(products);
-        searchResponseDto.setCurrentPage(1);
+        searchResponseDto.setCurrentPage(page);
         searchResponseDto.setTotalItems((int) response.hits().total().value());
         searchResponseDto.setTotalPages(calculateTotalPages(response.hits().total().value(), size));
 
