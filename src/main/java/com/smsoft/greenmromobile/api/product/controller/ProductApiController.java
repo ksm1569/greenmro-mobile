@@ -19,6 +19,11 @@ public class ProductApiController {
     private final JwtUtil jwtUtil;
     private final ProductService productService;
 
+    @GetMapping("/related-search")
+    public ResponseEntity<?> productRelatedList(@RequestParam String productName, @RequestParam String prefItem, @RequestParam Integer size) throws IOException {
+        return ResponseEntity.ok(productService.productRelatedList("products_search", productName, prefItem, size));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> productSearch(@RequestParam String productName, @RequestParam Integer size) throws IOException {
         return ResponseEntity.ok(productService.productSearch("products_search", productName, size));

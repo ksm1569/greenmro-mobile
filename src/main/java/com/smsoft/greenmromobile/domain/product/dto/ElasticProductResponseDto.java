@@ -10,4 +10,5 @@ public class ElasticProductResponseDto {
     private Integer prefitem;
     private String pname;
     private String ptechdescription;
+    private String bigImage;
 }

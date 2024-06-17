@@ -89,7 +89,6 @@
         $(document).on('click', '.search-item', function(event) {
             if (!$(event.target).hasClass('delete-btn')) {
                 const search = $(this).text().replace('×', '').trim();
-                console.log(search);
                 $recentSearchesContainer.hide();
                 $resultsContainer.show();
                 $clearButton.show();
@@ -122,7 +121,13 @@
                         let highlightedText = product.pname;
                         const searchRegex = new RegExp(query.split(/\s+/).join('|'), 'gi');
                         highlightedText = highlightedText.replace(searchRegex, match => `<span class="highlight">${match}</span>`);
-                        $resultsContainer.append($('<div>').html(highlightedText));
+
+                        const productLink = $('<div>').html(highlightedText).addClass('product-item');
+                        productLink.on('click', function() {
+                            window.location.href = `/product/searchList?productName=${query}&prefItem=${product.prefitem}`;
+                        });
+
+                        $resultsContainer.append($('<div>').html(productLink));
                     });
                 },
                 error: function(error) {

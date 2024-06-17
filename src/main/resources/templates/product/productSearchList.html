@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/product/productSearch.css}">
+</head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<div class="search-container">
+    <div id="resultsContainer"></div>
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<div th:replace="~{layout/fragments/common :: common-scripts}"></div>
+
+<script>
+    $(document).ready(function() {
+        let productName = "[[${productName}]]";
+        let prefItem = "[[${prefItem}]]";
+
+        if (productName && prefItem) {
+            let size = 20;
+            fetchRelatedProducts(productName, prefItem, size);
+        }
+
+    });
+
+    function fetchRelatedProducts(productName, prefItem, size) {
+        $.ajax({
+            url: '/api/products/related-search',
+            method: 'GET',
+            data: {
+                productName: productName,
+                prefItem: prefItem,
+                size: size
+            },
+            success: function(data) {
+                console.log(data);
+                displayProducts(data);
+            },
+            error: function(error) {
+                console.error('Error fetching related products:', error);
+            }
+        });
+    }
+
+    function displayProducts(data) {
+        let $resultsContainer = $('#resultsContainer');
+        $resultsContainer.empty();
+
+        if (data && data.products && data.products.length > 0) {
+            data.products.forEach(function(product) {
+                let productHtml = '<div class="product-item">' +
+                    '<img src="' + product.bigImage + '" alt="' + product.pname + '" style="width:100px;height:auto;">' +
+                    '<h3>' + product.pname + '</h3>' +
+                    '<p>' + product.ptechdescription.split('^').join('<br>') + '</p>' +
+                    '</div>';
+                $resultsContainer.append(productHtml);
+            });
+        } else {
+            $resultsContainer.append('<p>No products found or data is in unexpected format.</p>');
+        }
+    }
+</script>
+
+</body>
+</html>

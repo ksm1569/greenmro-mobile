@@ -76,6 +76,8 @@
 }
 
 .clear-all {
+    position: absolute;
     cursor: pointer;
     color: #aaa;
+    right: 22px;
 }

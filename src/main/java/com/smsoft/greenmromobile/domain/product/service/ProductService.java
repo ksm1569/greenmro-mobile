@@ -1,6 +1,7 @@
 package com.smsoft.greenmromobile.domain.product.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -26,18 +27,44 @@ public class ProductService {
     private final ProductCustomRepository productCustomRepository;
     private final ElasticsearchClient elasticsearchClient;
 
+    public ElasticProductSearchResponseDto productRelatedList(String index, String queryText, String pinnedId, Integer size) throws IOException {
+        String queryPattern = getProductQueryPattern(queryText);
+        log.info("Performing search on index: {} with queryText: {} and queryPattern: {} and size: {}", index, queryText, queryPattern, size);
+
+        SearchRequest request = SearchRequest.of(s -> s
+                .index(index)
+                .size(size)
+                .query(q -> q
+                        .pinned(p -> p
+                                .ids(Arrays.asList(pinnedId)) // Pinned IDs
+                                .organic(
+                                        Query.of(qb -> qb
+                                                .bool(b -> b
+                                                        .must(mu -> mu
+                                                                .queryString(qs -> qs
+                                                                        .defaultField("ptechdescription")
+                                                                        .query(queryPattern)
+                                                                        .analyzeWildcard(true)
+                                                                )
+                                                        )
+                                                        .filter(f -> f
+                                                                .term(t -> t
+                                                                        .field("isuse.keyword")
+                                                                        .value("Y")
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        return getElasticProductSearchResponseDto(size, request);
+    }
+
     public ElasticProductSearchResponseDto productSearch(String index, String queryText, Integer size) throws IOException {
-        String[] keywords = queryText.split("\\s+");
-        String queryPattern;
-
-        if (keywords.length > 1) {
-            queryPattern = Arrays.stream(keywords)
-                    .map(keyword -> "*" + keyword + "*")
-                    .collect(Collectors.joining(" OR "));
-        } else {
-            queryPattern = "*" + queryText + "*";
-        }
-
+        String queryPattern = getProductQueryPattern(queryText);
         log.info("Performing search on index: {} with queryText: {} and queryPattern: {} and size: {}", index, queryText, queryPattern, size);
 
         SearchRequest request = SearchRequest.of(s -> s
@@ -62,6 +89,10 @@ public class ProductService {
                 .size(size)
         );
 
+        return getElasticProductSearchResponseDto(size, request);
+    }
+
+    private ElasticProductSearchResponseDto getElasticProductSearchResponseDto(Integer size, SearchRequest request) throws IOException {
         SearchResponse<Object> response = elasticsearchClient.search(request, Object.class);
         log.info("response: {}", response.toString());
 
@@ -78,6 +109,20 @@ public class ProductService {
         return searchResponseDto;
     }
 
+    private static String getProductQueryPattern(String queryText) {
+        String[] keywords = queryText.split("\\s+");
+        String queryPattern;
+
+        if (keywords.length > 1) {
+            queryPattern = Arrays.stream(keywords)
+                    .map(keyword -> "*" + keyword + "*")
+                    .collect(Collectors.joining(" OR "));
+        } else {
+            queryPattern = "*" + queryText + "*";
+        }
+        return queryPattern;
+    }
+
     private ElasticProductResponseDto mapToDto(Hit<Object> hit) {
         Map<String, Object> source = (Map<String, Object>) hit.source();
         ElasticProductResponseDto dto = new ElasticProductResponseDto();
@@ -85,6 +130,7 @@ public class ProductService {
         dto.setPrefitem((Integer) source.get("prefitem"));
         dto.setPname((String) source.get("pname"));
         dto.setPtechdescription((String) source.get("ptechdescription"));
+        dto.setBigImage(formatImageUrl((String) source.get("bigimage")));
 
         return dto;
     }
@@ -92,6 +138,13 @@ public class ProductService {
     private int calculateTotalPages(long totalItems, Integer size) {
         if (size==0) size = 1;
         return (int) Math.ceil((double) totalItems / size);
+    }
+
+    private String formatImageUrl(String imageUrl) {
+        if (imageUrl != null && !imageUrl.contains("https://") && !imageUrl.contains("http://")) {
+            return "https://shop.greenproduct.co.kr" + imageUrl;
+        }
+        return imageUrl;
     }
 
     @Transactional(readOnly = true)
