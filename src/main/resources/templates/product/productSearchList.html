@@ -2,13 +2,26 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
-    <link rel="stylesheet" th:href="@{/css/product/productSearch.css}">
+    <link rel="stylesheet" th:href="@{/css/product/productSearchList.css}">
 </head>
 <body>
 <div th:replace="~{layout/header :: header}"></div>
 
-<div class="search-container">
-    <div id="resultsContainer"></div>
+
+<div class="product-header">
+    <h1 class="search-text"></h1>
+</div>
+<div class="product-summary">
+    <span class="totalProducts"></span>
+    <select id="sortOptions" class="form-select" aria-label="Default select example">
+        <option value="default">선택</option>
+        <option value="price_asc">낮은 가격순</option>
+        <option value="price_desc">높은 가격순</option>
+    </select>
+</div>
+
+<div class="search-container" id="resultsContainer">
+
 </div>
 
 <div th:replace="~{layout/footer :: footer}"></div>
@@ -16,6 +29,7 @@
 
 <script>
     let isLoadingGetProduct = false;
+    let isLastGetProduct = false;
     let productName = "[[${productName}]]";
     let prefItem = "[[${prefItem}]]";
     let pageSize = 20;
@@ -30,17 +44,22 @@
             }
         });
 
+        $('#sortOptions').change(function() {
+            currentPage = 1; // 정렬 옵션이 변경되면 첫 페이지부터 다시 로드
+            $('#resultsContainer').empty(); // 기존 내용을 비움
+            fetchAndDisplayProducts();
+        });
 
     });
 
     function fetchAndDisplayProducts() {
         if (productName && prefItem) {
-            fetchRelatedProducts(productName, prefItem, pageSize, currentPage);
+            fetchRelatedProducts();
         }
     }
 
-    function fetchRelatedProducts(productName, prefItem, size, page) {
-        if (isLoadingGetProduct) return;
+    function fetchRelatedProducts() {
+        if (isLoadingGetProduct || isLastGetProduct) return;
         isLoadingGetProduct = true;
 
         $.ajax({
@@ -49,14 +68,26 @@
             data: {
                 productName: productName,
                 prefItem: prefItem,
-                size: size,
-                page: page
+                size: pageSize,
+                page: currentPage,
+                sort: $('#sortOptions').val()
             },
             success: function(data) {
                 console.log(data);
+
+                if (currentPage === 1) {
+                    $('.search-text').text(`'${data.queryText}'에 대한 검색결과`);
+                    $('.totalProducts').text(`전체 ${data.totalItems}개`);
+                }
+
                 displayProducts(data);
-                isLoadingGetProduct = false;
+
+                if (data.totalPages === currentPage) {
+                    isLastGetProduct = true;
+                }
+
                 currentPage++;
+                isLoadingGetProduct = false;
             },
             error: function(error) {
                 console.log('Error fetching related products:', error);
@@ -69,13 +100,22 @@
         let $resultsContainer = $('#resultsContainer');
 
         if (data && data.products && data.products.length > 0) {
-            data.products.forEach(function(product) {
-                let productHtml = '<div class="product-item">' +
-                    '<img src="' + product.bigImage + '" alt="' + product.pname + '" style="width:100px;height:auto;">' +
-                    '<h3>' + product.pname + '</h3>' +
-                    '<p>' + product.ptechdescription.split('^').join('<br>') + '</p>' +
-                    '</div>';
+            data.products.forEach(function (product) {
+                let priceText = product.price === -1 ? "가격 문의" : product.price.toLocaleString() + '원';
+                let displayName = product.pname.length > 35 ? product.pname.substring(0, 35) + '...' : product.pname;
+                let productHtml = `
+                    <div class="product-item" data-prefitem="${product.prefitem}">
+                        <img class="product-image" src="${product.bigImage || '/images/noimage.gif'}" alt="${product.pname}">
+                        <h3 class="product-name">${displayName}</h3>
+                        <p class="product-price">${priceText}</p>
+                    </div>
+                `;
                 $resultsContainer.append(productHtml);
+            });
+
+            $('.product-item').click(function() {
+                const prefItem = $(this).data('prefitem');
+                window.location.href = `/product/detail/${prefItem}`;
             });
         }
     }

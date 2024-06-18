@@ -20,8 +20,16 @@ public class ProductApiController {
     private final ProductService productService;
 
     @GetMapping("/related-search")
-    public ResponseEntity<?> productRelatedList(@RequestParam String productName, @RequestParam String prefItem, @RequestParam Integer size, @RequestParam Integer page) throws IOException {
-        return ResponseEntity.ok(productService.productRelatedList("products_search", productName, prefItem, size, page));
+    public ResponseEntity<?> productRelatedList(
+            @CookieValue(name = "accessToken", required = true) String token,
+            @RequestParam String productName,
+            @RequestParam String prefItem,
+            @RequestParam Integer size,
+            @RequestParam Integer page,
+            @RequestParam(required = false) String sort
+    ) throws IOException {
+        Long ucompanyRef = jwtUtil.getUcompanyRefFromToken(token);
+        return ResponseEntity.ok(productService.productRelatedList(ucompanyRef, "products_search", productName, prefItem, size, page, sort));
     }
 
     @GetMapping("/search")

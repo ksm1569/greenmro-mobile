@@ -12,4 +12,5 @@ public class ElasticProductSearchResponseDto {
     private int currentPage;
     private int totalItems;
     private int totalPages;
+    private String queryText;
 }
