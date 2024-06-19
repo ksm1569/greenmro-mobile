@@ -124,6 +124,7 @@
 
                         const productLink = $('<div>').html(highlightedText).addClass('product-item');
                         productLink.on('click', function() {
+                            localStorage.removeItem('sortOption');
                             window.location.href = `/product/searchList?productName=${query}&prefItem=${product.prefitem}`;
                         });
 

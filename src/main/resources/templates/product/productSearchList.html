@@ -36,6 +36,11 @@
     let currentPage = 1;
 
     $(document).ready(function() {
+        const savedSortOption = localStorage.getItem('sortOption');
+        if (savedSortOption) {
+            $('#sortOptions').val(savedSortOption);
+        }
+
         fetchAndDisplayProducts();
 
         $(window).scroll(function() {
@@ -45,8 +50,11 @@
         });
 
         $('#sortOptions').change(function() {
-            currentPage = 1; // 정렬 옵션이 변경되면 첫 페이지부터 다시 로드
-            $('#resultsContainer').empty(); // 기존 내용을 비움
+            const selectedOption = $(this).val();
+            localStorage.setItem('sortOption', selectedOption);
+
+            currentPage = 1;
+            $('#resultsContainer').empty();
             fetchAndDisplayProducts();
         });
 
