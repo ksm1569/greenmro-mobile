@@ -67,12 +67,12 @@
 
         <div class="un-reg-products-container">
             <div class="un-reg-products-header">
-                <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록 상품</h5>
-                <button class="load-more-btn" id="un-reg-more">더보기</button>
-            </div>
+            <h5 class="text-left ms-3 mt-4 mb-3">고객사 미등록 상품</h5>
+            <button class="load-more-btn" id="un-reg-more">더보기</button>
+        </div>
 
-            <div class="scroll-arrow left" id="un-reg-scroll-left"><</div>
-            <div class="product-un-reg-grid" id="product-un-reg-contents">
+        <div class="scroll-arrow left" id="un-reg-scroll-left"><</div>
+        <div class="product-un-reg-grid" id="product-un-reg-contents">
 
             </div>
             <div class="scroll-arrow right" id="un-reg-scroll-right">></div>
@@ -84,6 +84,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            updateInitialArrowVisibility();
+
             let regContainer = $('#product-reg-contents');
             let isLastRegProduct = false;
             let isLoadingRegProduct = false;
@@ -129,6 +131,13 @@
                     }
                 });
             }
+
+            function updateInitialArrowVisibility() {
+                $('#pop-scroll-left').hide();
+                $('#reg-scroll-left').hide();
+                $('#un-reg-scroll-left').hide();
+            }
+
 
             function loadUnRegProductData() {
                 if (isLoadingUnRegProduct || isLastUnRegProduct) return;
@@ -236,22 +245,43 @@
                 }
             }
 
+            $('#product-pop-contents').on('scroll', function() {
+                let $this = $(this);
+                let scrollLeft = $this.scrollLeft();
+                let scrollWidth = $this[0].scrollWidth;
+                let innerWidth = $this.innerWidth();
+
+                if (scrollLeft + innerWidth >= scrollWidth) {
+                    loadPopProductData();
+                }
+
+                $('#pop-scroll-left').toggle(scrollLeft > 0);
+            });
+
             $('#product-reg-contents').on('scroll', function() {
-                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
+                let $this = $(this);
+                let scrollLeft = $this.scrollLeft();
+                let scrollWidth = $this[0].scrollWidth;
+                let innerWidth = $this.innerWidth();
+
+                if (scrollLeft + innerWidth >= scrollWidth) {
                     loadRegProductData();
                 }
+
+                $('#reg-scroll-left').toggle(scrollLeft > 0);
             });
 
             $('#product-un-reg-contents').on('scroll', function() {
-                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
+                let $this = $(this);
+                let scrollLeft = $this.scrollLeft();
+                let scrollWidth = $this[0].scrollWidth;
+                let innerWidth = $this.innerWidth();
+
+                if (scrollLeft + innerWidth >= scrollWidth) {
                     loadUnRegProductData();
                 }
-            });
 
-            $('#product-pop-contents').on('scroll', function() {
-                if ($(this).scrollLeft() + $(this).innerWidth() >= $(this)[0].scrollWidth) {
-                    loadPopProductData();
-                }
+                $('#un-reg-scroll-left').toggle(scrollLeft > 0);
             });
 
             $('#reg-scroll-left').click(function() {
