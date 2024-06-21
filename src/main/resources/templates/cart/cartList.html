@@ -317,6 +317,13 @@
             });
         }
 
+        $('#cart-contents').on('click', '.product-name, .product-image', function() {
+            var prefItem = $(this).closest('.cart-item').data('prefItem');
+            if (prefItem) {
+                window.location.href = `/product/detail/${prefItem}`;
+            }
+        });
+
         // 모달에서 '삭제' 버튼 클릭 시
         $('#confirmDelete').on('click', function() {
             let deleteType = $('#deleteConfirmationModal').data('deleteType');
