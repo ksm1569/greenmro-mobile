@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/fragments/common :: common-head}"></th:block>
-    <link rel="stylesheet" th:href="@{/css/product/productSearchList.css}">
+    <link rel="stylesheet" th:href="@{/css/product/productCategoryList.css}">
 </head>
 <body>
 <div th:replace="~{layout/header :: header}"></div>
@@ -14,9 +14,11 @@
 <div class="product-summary">
     <span class="totalProducts"></span>
     <select id="sortOptions" class="form-select" aria-label="Default select example">
-        <option value="default">선택</option>
+        <option value="name_asc" selected>낮은 이름순</option>
+        <option value="name_desc">높은 이름순</option>
         <option value="price_asc">낮은 가격순</option>
         <option value="price_desc">높은 가격순</option>
+
     </select>
 </div>
 
@@ -30,13 +32,17 @@
 <script>
     let isLoadingGetProduct = false;
     let isLastGetProduct = false;
-    let productName = "[[${productName}]]";
-    let prefItem = "[[${prefItem}]]";
-    let pageSize = 20;
-    let currentPage = 1;
+    // 1:인기 2:신규 999:카테고리
+    let flag = [[${flag}]];
+    let crefItem = "[[${crefItem}]]";
+    let categoryName = "[[${categoryName}]]";
+    let pageSize = 40;
+    let currentPage = 0;
 
     $(document).ready(function() {
-        const savedSortOption = localStorage.getItem('searchSortOption');
+        $('.search-text').text('> '+ categoryName);
+
+        const savedSortOption = localStorage.getItem('categorySortOption');
         if (savedSortOption) {
             $('#sortOptions').val(savedSortOption);
         }
@@ -51,41 +57,43 @@
 
         $('#sortOptions').change(function() {
             const selectedOption = $(this).val();
-            localStorage.setItem('searchSortOption', selectedOption);
+            localStorage.setItem('categorySortOption', selectedOption);
 
-            currentPage = 1;
+            currentPage = 0;
             $('#resultsContainer').empty();
             fetchAndDisplayProducts();
         });
-
     });
 
     function fetchAndDisplayProducts() {
-        if (productName && prefItem) {
-            fetchRelatedProducts();
+        if (flag === 999) {
+            fetchCategoryProducts();
+        } else if (flag === 1) {
+            fetchPopProducts();
+        } else if (flag === 2) {
+            fetchNewProducts();
         }
     }
 
-    function fetchRelatedProducts() {
+    function fetchCategoryProducts() {
         if (isLoadingGetProduct || isLastGetProduct) return;
         isLoadingGetProduct = true;
 
         $.ajax({
-            url: '/api/products/related-search',
+            url: '/api/products/category',
             method: 'GET',
             data: {
-                productName: productName,
-                prefItem: prefItem,
-                size: pageSize,
+                categoryId: crefItem,
+                sort: $('#sortOptions').val(),
                 page: currentPage,
-                sort: $('#sortOptions').val()
+                size: pageSize
             },
             success: function(data) {
                 console.log(data);
 
-                if (currentPage === 1) {
-                    $('.search-text').text(`'${data.queryText}'에 대한 검색결과`);
-                    $('.totalProducts').text(`전체 ${data.totalItems}개`);
+                if (currentPage === 0) {
+                    //$('.search-text').text(`'${data.queryText}'에 대한 검색결과`);
+                    $('.totalProducts').text(`전체 ${data.totalElements}개`);
                 }
 
                 displayProducts(data);
@@ -104,15 +112,23 @@
         });
     }
 
+    function fetchPopProducts() {
+
+    }
+
+    function fetchNewProducts() {
+
+    }
+
     function displayProducts(data) {
         let $resultsContainer = $('#resultsContainer');
 
-        if (data && data.products && data.products.length > 0) {
-            data.products.forEach(function (product) {
-                let priceText = product.price === -1 ? "가격 문의" : product.price.toLocaleString() + '원';
+        if (data && data.content && data.content.length > 0) {
+            data.content.forEach(function (product) {
+                let priceText = product.bprice === -1 ? "가격 문의" : product.bprice.toLocaleString() + '원';
                 let displayName = product.pname.length > 35 ? product.pname.substring(0, 35) + '...' : product.pname;
                 let productHtml = `
-                    <div class="product-item" data-prefitem="${product.prefitem}">
+                    <div class="product-item" data-prefitem="${product.prefItem}">
                         <img class="product-image" src="${product.bigImage || '/images/noimage.gif'}" alt="${product.pname}">
                         <h3 class="product-name">${displayName}</h3>
                         <p class="product-price">${priceText}</p>

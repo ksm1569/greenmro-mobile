@@ -19,6 +19,4 @@ public class ProductsByCategoryResponseDto {
     private String pname;
     private String pDescription;
     private java.math.BigDecimal bprice;
-
-
 }

@@ -20,7 +20,7 @@ public class ProductApiController {
     private final JwtUtil jwtUtil;
     private final ProductService productService;
 
-    @GetMapping("/category-list")
+    @GetMapping("/category")
     public ResponseEntity<?> getProductByCategory(@Valid @ModelAttribute ProductsByCategoryRequestDto productsByCategoryRequestDto) {
         return ResponseEntity.ok(productService.getProductsByCategory(productsByCategoryRequestDto));
     }

@@ -34,11 +34,21 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     @Override
     public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable) {
         switch (sort) {
-            case "price_asc":
-                sort = "NVL(MAX(BP.BPRICE), 0) asc";
+            case "name_asc":
+                sort = "P.PNAME asc";
                 break;
+            case "name_desc":
+                sort = "P.PNAME desc";
+                break;
+            case "price_asc":
+                sort = "MAX(BP.BPRICE) asc";
+                break;
+            case "price_desc":
+                sort ="MAX(BP.BPRICE) desc";
+                break;
+
             default:
-                sort = "NVL(MAX(BP.BPRICE), 0) desc";
+                sort = "MAX(BP.BPRICE) asc";
                 break;
         }
 
@@ -50,7 +60,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                 + "    SELECT PC.CREFITEM AS CREFITEM, CG.CATEGORY AS CATEGORYNM, "
                 + "           P.PMANUFACTUREID AS MANUFACTUREID, P.PMANUFACTURER AS MANUFACTURER, "
                 + "           P.PREFITEM AS PREFITEM, P.BIGIMAGE AS BIGIMAGE, P.PNAME AS PNAME, "
-                + "           P.PDESCRIPTION AS PDESCRIPTION, NVL(MAX(BP.BPRICE), 0) AS BPRICE, "
+                + "           P.PDESCRIPTION AS PDESCRIPTION, MAX(BP.BPRICE) AS BPRICE, "
                 + "           ROW_NUMBER() OVER (ORDER BY " + sort + " ) AS row_num "
                 + "      FROM PRODUCTS P "
                 + "           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' "
@@ -58,7 +68,10 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
                 + "           INNER JOIN (SELECT * FROM CATEGORYRELATION CR "
                 + "                        START WITH CR.CREFITEM = :crefItem "
                 + "                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM "
-                + "           LEFT OUTER JOIN BUYERPRICES BP ON P.PREFITEM = BP.PREFITEM AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') "
+                + "           INNER JOIN BUYERPRICES BP "
+                + "                  ON P.PREFITEM = BP.PREFITEM "
+                + "                 AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') "
+                + "                 AND BP.BPRICE <> 0 AND BP.BPRICE <> 1 "
                 + "      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' "
                 + "      GROUP BY PC.CREFITEM, CG.CATEGORY, P.PMANUFACTUREID, P.PMANUFACTURER, P.PREFITEM, P.BIGIMAGE, P.PNAME, P.PDESCRIPTION "
                 + ") WHERE row_num BETWEEN :startRow AND :endRow";

@@ -271,3 +271,8 @@ body {
 .product-link:hover {
     color: #70DC9D;
 }
+
+.category-link {
+    text-decoration: none;
+    color: inherit;
+}
