@@ -3,6 +3,7 @@ package com.smsoft.greenmromobile.api.product.controller;
 import com.smsoft.greenmromobile.domain.product.dto.ProductPopListRequestDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductRegListRequestDto;
 import com.smsoft.greenmromobile.domain.product.dto.ProductUnRegListRequestDto;
+import com.smsoft.greenmromobile.domain.product.dto.ProductsByCategoryRequestDto;
 import com.smsoft.greenmromobile.domain.product.service.ProductService;
 import com.smsoft.greenmromobile.global.jwt.JwtUtil;
 import jakarta.validation.Valid;
@@ -18,6 +19,11 @@ import java.io.IOException;
 public class ProductApiController {
     private final JwtUtil jwtUtil;
     private final ProductService productService;
+
+    @GetMapping("/category-list")
+    public ResponseEntity<?> getProductByCategory(@Valid @ModelAttribute ProductsByCategoryRequestDto productsByCategoryRequestDto) {
+        return ResponseEntity.ok(productService.getProductsByCategory(productsByCategoryRequestDto));
+    }
 
     @GetMapping("/related-search")
     public ResponseEntity<?> productRelatedList(

@@ -32,6 +32,72 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable) {
+        switch (sort) {
+            case "price_asc":
+                sort = "NVL(MAX(BP.BPRICE), 0) asc";
+                break;
+            default:
+                sort = "NVL(MAX(BP.BPRICE), 0) desc";
+                break;
+        }
+
+        int pageSize = pageable.getPageSize();
+        int startRow = (int) pageable.getOffset() + 1;
+        int endRow = startRow + pageSize - 1;
+
+        String sql = "SELECT * FROM ("
+                + "    SELECT PC.CREFITEM AS CREFITEM, CG.CATEGORY AS CATEGORYNM, "
+                + "           P.PMANUFACTUREID AS MANUFACTUREID, P.PMANUFACTURER AS MANUFACTURER, "
+                + "           P.PREFITEM AS PREFITEM, P.BIGIMAGE AS BIGIMAGE, P.PNAME AS PNAME, "
+                + "           P.PDESCRIPTION AS PDESCRIPTION, NVL(MAX(BP.BPRICE), 0) AS BPRICE, "
+                + "           ROW_NUMBER() OVER (ORDER BY " + sort + " ) AS row_num "
+                + "      FROM PRODUCTS P "
+                + "           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' "
+                + "           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' "
+                + "           INNER JOIN (SELECT * FROM CATEGORYRELATION CR "
+                + "                        START WITH CR.CREFITEM = :crefItem "
+                + "                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM "
+                + "           LEFT OUTER JOIN BUYERPRICES BP ON P.PREFITEM = BP.PREFITEM AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') "
+                + "      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' "
+                + "      GROUP BY PC.CREFITEM, CG.CATEGORY, P.PMANUFACTUREID, P.PMANUFACTURER, P.PREFITEM, P.BIGIMAGE, P.PNAME, P.PDESCRIPTION "
+                + ") WHERE row_num BETWEEN :startRow AND :endRow";
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("crefItem", crefItem)
+                .addValue("startRow", startRow)
+                .addValue("endRow", endRow);
+
+        List<ProductsByCategoryResponseDto> products = jdbcTemplate.query(
+                sql,
+                parameters,
+                new ProductsByCategoryResponseDtoMapper()
+        );
+
+        String countQuery = "SELECT COUNT(*) "
+                + "      FROM PRODUCTS P "
+                + "           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' "
+                + "           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' "
+                + "           INNER JOIN (SELECT * FROM CATEGORYRELATION CR "
+                + "                        START WITH CR.CREFITEM = :crefItem "
+                + "                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM "
+                + "      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' ";
+
+        Optional<Long> totalElementsOpt = Optional.ofNullable(jdbcTemplate.queryForObject(
+                countQuery,
+                new MapSqlParameterSource("crefItem", crefItem),
+                Long.class)
+        );
+
+        long currentPageNumber = pageable.getPageNumber();
+        long totalElements = totalElementsOpt.orElse(0L);
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        boolean isLast = endRow >= totalElements;
+
+        return new PagedProductResponseDto<>(products, currentPageNumber, totalElements, totalPages, isLast);
+    }
+
+    @Override
     public PagedProductResponseDto<ProductRegListResponseDto> getRegisteredProducts(Long userId, Long companyId, Pageable pageable) {
         int pageSize = pageable.getPageSize();
         int startRow = (int) pageable.getOffset() + 1;
@@ -276,6 +342,23 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         }
 
         return responseDto;
+    }
+
+    private static class ProductsByCategoryResponseDtoMapper implements RowMapper<ProductsByCategoryResponseDto> {
+        @Override
+        public ProductsByCategoryResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new ProductsByCategoryResponseDto(
+                    rs.getLong("CREFITEM"),
+                    rs.getString("CATEGORYNM"),
+                    rs.getLong("MANUFACTUREID"),
+                    rs.getString("MANUFACTURER"),
+                    rs.getLong("PREFITEM"),
+                    formatImageUrl(rs.getString("BIGIMAGE")),
+                    rs.getString("PNAME"),
+                    rs.getString("PDESCRIPTION"),
+                    rs.getBigDecimal("BPRICE")
+            );
+        }
     }
 
     private static class ProductRegListResponseDtoMapper implements RowMapper<ProductRegListResponseDto> {
