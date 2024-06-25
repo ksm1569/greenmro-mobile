@@ -7,6 +7,7 @@ public interface ProductCustomRepository {
     PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable);
     PagedProductResponseDto<ProductRegListResponseDto> getRegisteredProducts(Long userId, Long companyId, Pageable pageable);
     PagedProductResponseDto<ProductUnRegListResponseDto> getUnRegisteredProducts(Long userId, Long companyId, Pageable pageable);
+    PagedProductResponseDto<ProductNewListResponseDto> getNewProducts(Pageable pageable);
     PagedProductResponseDto<ProductPopListResponseDto> getPopProducts(Pageable pageable);
     ProductDetailResponseDto getProductDetail(Long companyId, Long prefItem);
 }

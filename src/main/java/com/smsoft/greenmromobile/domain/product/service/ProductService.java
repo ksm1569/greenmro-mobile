@@ -261,6 +261,15 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public PagedProductResponseDto<ProductNewListResponseDto> getNewProducts(
+            ProductNewRequestDto productNewRequestDto
+    ) {
+        Pageable pageable = PageRequest.of(productNewRequestDto.page(), productNewRequestDto.size());
+
+        return productCustomRepository.getNewProducts(pageable);
+    }
+
+    @Transactional(readOnly = true)
     public PagedProductResponseDto<ProductPopListResponseDto> getPopProducts(
             ProductPopListRequestDto productPopListRequestDto
     ) {

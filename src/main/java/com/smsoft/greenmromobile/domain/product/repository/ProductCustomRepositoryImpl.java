@@ -249,6 +249,60 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     }
 
     @Override
+    public PagedProductResponseDto<ProductNewListResponseDto> getNewProducts(Pageable pageable) {
+        int pageSize = pageable.getPageSize();
+        int startRow = (int) pageable.getOffset() + 1;
+        int endRow = startRow + pageSize - 1;
+
+        String sql =
+                "SELECT * " +
+                 " FROM (SELECT P.PREFITEM, " +
+                              " P.BIGIMAGE, " +
+                              " P.PNAME, " +
+                              " MAX(BP.BPRICE) AS BPRICE, " +
+                              " ROW_NUMBER() over (ORDER BY P.PADDEDON DESC) AS ROW_NUM " +
+                              " FROM PRODUCTS P " +
+                              " INNER JOIN BUYERPRICES BP " +
+                              " ON P.PREFITEM = BP.PREFITEM " +
+                              " AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') " +
+                              " AND BP.BPRICE <> 0 " +
+                              " AND BP.BPRICE <> 1 " +
+                        " WHERE P.ISUSE = 'Y' " +
+                           "AND P.ISUSE_2 = 'Y' " +
+                        " GROUP BY P.PREFITEM, P.BIGIMAGE, P.PNAME, P.PADDEDON " +
+                ") WHERE ROW_NUM BETWEEN :startRow AND :endRow ";
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("startRow", startRow)
+                .addValue("endRow", endRow);
+
+        List<ProductNewListResponseDto> products = jdbcTemplate.query(
+                sql,
+                parameters,
+                new ProductNewListResponseDtoMapper()
+        );
+
+        String countQuery =
+                "SELECT count(*) " +
+                "  FROM PRODUCTS P " +
+                " WHERE P.ISUSE = 'Y' " +
+                "   AND P.ISUSE_2 = 'Y' ";
+
+        Optional<Long> totalElementsOpt = Optional.ofNullable(jdbcTemplate.queryForObject(
+                countQuery,
+                new MapSqlParameterSource(),
+                Long.class)
+        );
+
+        long currentPageNumber = pageable.getPageNumber();
+        long totalElements = totalElementsOpt.orElse(0L);
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        boolean isLast = endRow >= totalElements;
+
+        return new PagedProductResponseDto<>(products, currentPageNumber, totalElements, totalPages, isLast);
+    }
+
+    @Override
     public PagedProductResponseDto<ProductPopListResponseDto> getPopProducts(Pageable pageable) {
         int pageSize = pageable.getPageSize();
         int startRow = (int) pageable.getOffset() + 1;
@@ -390,6 +444,18 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         @Override
         public ProductUnRegListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new ProductUnRegListResponseDto(
+                    rs.getLong("PREFITEM"),
+                    formatImageUrl(rs.getString("BIGIMAGE")),
+                    rs.getString("PNAME"),
+                    rs.getBigDecimal("BPRICE")
+            );
+        }
+    }
+
+    private static class ProductNewListResponseDtoMapper implements RowMapper<ProductNewListResponseDto> {
+        @Override
+        public ProductNewListResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new ProductNewListResponseDto(
                     rs.getLong("PREFITEM"),
                     formatImageUrl(rs.getString("BIGIMAGE")),
                     rs.getString("PNAME"),

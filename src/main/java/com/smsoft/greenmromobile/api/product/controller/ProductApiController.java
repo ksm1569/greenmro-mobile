@@ -1,9 +1,6 @@
 package com.smsoft.greenmromobile.api.product.controller;
 
-import com.smsoft.greenmromobile.domain.product.dto.ProductPopListRequestDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductRegListRequestDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductUnRegListRequestDto;
-import com.smsoft.greenmromobile.domain.product.dto.ProductsByCategoryRequestDto;
+import com.smsoft.greenmromobile.domain.product.dto.*;
 import com.smsoft.greenmromobile.domain.product.service.ProductService;
 import com.smsoft.greenmromobile.global.jwt.JwtUtil;
 import jakarta.validation.Valid;
@@ -63,6 +60,13 @@ public class ProductApiController {
         Long ucompanyRef = jwtUtil.getUcompanyRefFromToken(token);
 
         return ResponseEntity.ok(productService.getUnRegisteredProducts(urefItem, ucompanyRef, productUnRegListRequestDto));
+    }
+
+    @GetMapping("/new-product")
+    public ResponseEntity<?> getNewProducts(
+            @Valid @ModelAttribute ProductNewRequestDto productNewRequestDto
+    ) {
+        return ResponseEntity.ok(productService.getNewProducts(productNewRequestDto));
     }
 
     @GetMapping("/popular")
