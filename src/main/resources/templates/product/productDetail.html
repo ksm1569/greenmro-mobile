@@ -8,6 +8,7 @@
     <div th:replace="~{layout/header :: header}"></div>
 
     <div class="main-content">
+        <div id="category-path" class="category-path"></div>
         <div class="product-images-slider">
             <!-- 이미지 슬라이더 컨테이너 -->
         </div>
@@ -107,6 +108,14 @@
             });
 
             let prefItem = [[${prefItem}]];
+
+            fetchProductCategory(prefItem, function (data) {
+                let categoryPath = document.getElementById('category-path');
+                categoryPath.innerHTML = data.map((category, index) => {
+                    let link = `<a href="/product/by-category?crefItem=${category.crefItem}&categoryName=${encodeURIComponent(category.categoryName)}">${category.categoryName}</a>`;
+                    return index < data.length - 1 ? link + ' > ' : link;
+                }).join('');
+            });
 
             fetchProductDetails(prefItem, function(data) {
                 console.log(data);

@@ -193,6 +193,19 @@ body, html {
     cursor: pointer;
 }
 
+.category-path {
+    padding: 0 10px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+.category-path a {
+    color: #828c94;
+    text-decoration: none;
+}
+.category-path a:hover {
+    text-decoration: none;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .product-details, .product-description {
