@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -30,6 +31,48 @@ import java.util.regex.Pattern;
 public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<ProductCategoryHierarchyResponseDto> getProductCategoriesByPrefItem(Long prefItem) {
+        QProduct product = QProduct.product;
+        QProductCategory productCategory = QProductCategory.productCategory;
+
+        Long crefItem = queryFactory
+                .select(productCategory.category.cRefItem)
+                .from(product)
+                .innerJoin(productCategory)
+                    .on(product.prefItem.eq(productCategory.pRefItem))
+                .where(product.prefItem.eq(prefItem))
+                .fetchOne();
+
+        if (crefItem == null) {
+            return Collections.emptyList();
+        }
+
+        String sql =
+                "SELECT CT.CATEGORYDEPTH AS CATEGORY_DEPTH, " +
+                        "       CT.CREFITEM AS CREFITEM, " +
+                        "       CT.CATEGORY AS CATEGORY_NAME " +
+                        "FROM CATEGORIES CT " +
+                        "INNER JOIN CATEGORYRELATION CR ON CT.CREFITEM = CR.CREFITEM " +
+                        "WHERE CT.CATEGORYDEPTH <> 0 " +
+                        "START WITH CR.CREFITEM = :crefItem " +
+                        "CONNECT BY CR.CREFITEM = PRIOR CR.CPARENTREF " +
+                        "ORDER BY CT.CATEGORYDEPTH";
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("crefItem", crefItem);
+
+        return jdbcTemplate.query(
+                sql,
+                parameters,
+                (rs, rowNum) -> new ProductCategoryHierarchyResponseDto(
+                        rs.getInt("CATEGORY_DEPTH"),
+                        rs.getLong("CREFITEM"),
+                        rs.getString("CATEGORY_NAME")
+                )
+        );
+    }
 
     @Override
     public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable) {

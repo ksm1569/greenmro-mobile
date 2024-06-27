@@ -17,7 +17,12 @@ public class ProductApiController {
     private final JwtUtil jwtUtil;
     private final ProductService productService;
 
-    @GetMapping("/category")
+    @GetMapping("/{productId}/categories")
+    public ResponseEntity<?> getProductCategories(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductCategoriesByPrefItem(productId));
+    }
+
+    @GetMapping("/by-category")
     public ResponseEntity<?> getProductByCategory(@Valid @ModelAttribute ProductsByCategoryRequestDto productsByCategoryRequestDto) {
         return ResponseEntity.ok(productService.getProductsByCategory(productsByCategoryRequestDto));
     }

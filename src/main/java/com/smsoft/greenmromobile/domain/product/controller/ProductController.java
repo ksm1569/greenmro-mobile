@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class ProductController {
-    @GetMapping("/product/category")
+    @GetMapping("/product/by-category")
     public String productCategoryList(
             @RequestParam(required = false, defaultValue = "999") Integer flag,
             @RequestParam(required = true) Long crefItem,

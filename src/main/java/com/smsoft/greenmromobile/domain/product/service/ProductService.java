@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.smsoft.greenmromobile.domain.product.dto.*;
 import com.smsoft.greenmromobile.domain.product.repository.ProductCustomRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +26,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class ProductService {
-    private final JPAQueryFactory queryFactory;
     private final ProductCustomRepository productCustomRepository;
     private final ElasticsearchClient elasticsearchClient;
+
+    @Transactional(readOnly = true)
+    public List<ProductCategoryHierarchyResponseDto> getProductCategoriesByPrefItem(Long prefItem) {
+        return productCustomRepository.getProductCategoriesByPrefItem(prefItem);
+    }
 
     public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(ProductsByCategoryRequestDto requestDto) {
         log.info("categoryId : {}, page : {}, size : {}", requestDto.getCategoryId(), requestDto.getPage(), requestDto.getSize());
