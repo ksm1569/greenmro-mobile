@@ -38,7 +38,7 @@ public class ProductService {
         log.info("categoryId : {}, page : {}, size : {}", requestDto.getCategoryId(), requestDto.getPage(), requestDto.getSize());
 
         Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
-        return productCustomRepository.getProductsByCategory(requestDto.getCategoryId(), requestDto.getSort(), pageable);
+        return productCustomRepository.getProductsByCategory(requestDto.getCategoryId(), requestDto.getUcompanyRef(), requestDto.getRegFlag(), requestDto.getSort(), pageable);
     }
 
     public ElasticProductSearchResponseDto productRelatedList(Long ucompanyRef, String index, String queryText, String pinnedId, Integer size, Integer page, String sort) throws IOException {

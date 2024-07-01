@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ProductCustomRepository {
     List<ProductCategoryHierarchyResponseDto> getProductCategoriesByPrefItem(Long prefItem);
-    PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable);
+    PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, Long ucompanyRef, String regFlag, String sort, Pageable pageable);
     PagedProductResponseDto<ProductRegListResponseDto> getRegisteredProducts(Long userId, Long companyId, Pageable pageable);
     PagedProductResponseDto<ProductUnRegListResponseDto> getUnRegisteredProducts(Long userId, Long companyId, Pageable pageable);
     PagedProductResponseDto<ProductNewListResponseDto> getNewProducts(Pageable pageable);

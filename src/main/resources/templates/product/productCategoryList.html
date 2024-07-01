@@ -35,6 +35,7 @@
     let flag = [[${flag}]];
     let crefItem = "[[${crefItem}]]";
     let categoryName = "[[${categoryName}]]";
+    let ucompanyRef = "[[${ucompanyRef}]]";
     let pageSize = 20;
     let currentPage = 0;
 
@@ -87,6 +88,8 @@
             method: 'GET',
             data: {
                 categoryId: crefItem,
+                ucompanyRef: ucompanyRef,
+                regFlag : categoryName === "고객사등록상품" ? 'Y' : 'N',
                 sort: $('#sortOptions').val(),
                 page: currentPage,
                 size: pageSize

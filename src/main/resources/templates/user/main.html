@@ -253,6 +253,18 @@
                 }
             }
 
+            $('#pop-more').on('click', function () {
+                window.location.href = '/product/by-category?flag=1&crefItem=1&categoryName=인기상품';
+            });
+
+            $('#reg-more').on('click', function () {
+                window.location.href = '/product/by-category?flag=999&crefItem=0&categoryName=고객사등록상품';
+            });
+
+            $('#un-reg-more').on('click', function () {
+                window.location.href = '/product/by-category?flag=999&crefItem=0&categoryName=고객사미등록상품';
+            });
+
             $('#product-pop-contents').on('scroll', function() {
                 let $this = $(this);
                 let scrollLeft = $this.scrollLeft();

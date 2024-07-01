@@ -75,7 +75,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
     }
 
     @Override
-    public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, String sort, Pageable pageable) {
+    public PagedProductResponseDto<ProductsByCategoryResponseDto> getProductsByCategory(Long crefItem, Long ucompanyRef, String regFlag, String sort, Pageable pageable) {
         switch (sort) {
             case "name_asc":
                 sort = "P.PNAME asc";
@@ -99,49 +99,79 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository{
         int startRow = (int) pageable.getOffset() + 1;
         int endRow = startRow + pageSize - 1;
 
-        String sql = "SELECT * FROM ("
-                + "    SELECT PC.CREFITEM AS CREFITEM, CG.CATEGORY AS CATEGORYNM, "
-                + "           P.PMANUFACTUREID AS MANUFACTUREID, P.PMANUFACTURER AS MANUFACTURER, "
-                + "           P.PREFITEM AS PREFITEM, P.BIGIMAGE AS BIGIMAGE, P.PNAME AS PNAME, "
-                + "           P.PDESCRIPTION AS PDESCRIPTION, MAX(BP.BPRICE) AS BPRICE, "
-                + "           ROW_NUMBER() OVER (ORDER BY " + sort + " ) AS row_num "
-                + "      FROM PRODUCTS P "
-                + "           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' "
-                + "           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' "
-                + "           INNER JOIN (SELECT * FROM CATEGORYRELATION CR "
-                + "                        START WITH CR.CREFITEM = :crefItem "
-                + "                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM "
-                + "           INNER JOIN BUYERPRICES BP "
-                + "                  ON P.PREFITEM = BP.PREFITEM "
-                + "                 AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') "
-                + "                 AND BP.BPRICE <> 0 AND BP.BPRICE <> 1 "
-                + "      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' "
-                + "      GROUP BY PC.CREFITEM, CG.CATEGORY, P.PMANUFACTUREID, P.PMANUFACTURER, P.PREFITEM, P.BIGIMAGE, P.PNAME, P.PDESCRIPTION "
-                + ") WHERE row_num BETWEEN :startRow AND :endRow";
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT * FROM (")
+                .append("    SELECT PC.CREFITEM AS CREFITEM, CG.CATEGORY AS CATEGORYNM, ")
+                .append("           P.PMANUFACTUREID AS MANUFACTUREID, P.PMANUFACTURER AS MANUFACTURER, ")
+                .append("           P.PREFITEM AS PREFITEM, P.BIGIMAGE AS BIGIMAGE, P.PNAME AS PNAME, ")
+                .append("           P.PDESCRIPTION AS PDESCRIPTION, MAX(BP.BPRICE) AS BPRICE, ")
+                .append("           ROW_NUMBER() OVER (ORDER BY ").append(sort).append(" ) AS row_num ")
+                .append("      FROM PRODUCTS P ")
+                .append("           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' ")
+                .append("           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' ")
+                .append("           INNER JOIN (SELECT * FROM CATEGORYRELATION CR ")
+                .append("                        START WITH CR.CREFITEM = :crefItem ")
+                .append("                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM ")
+                .append("           INNER JOIN BUYERPRICES BP ")
+                .append("                  ON P.PREFITEM = BP.PREFITEM ")
+                .append("                 AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') ")
+                .append("                 AND BP.BPRICE <> 0 AND BP.BPRICE <> 1 ");
+
+        if (ucompanyRef != null) {
+            if (regFlag.equals("Y")) {
+                sqlBuilder.append("                 AND BP.UCOMPANYREF = :ucompanyRef ");
+            }
+            if (regFlag.equals("N")) {
+                sqlBuilder.append("                 AND BP.UCOMPANYREF <> :ucompanyRef ");
+            }
+        }
+
+        sqlBuilder.append("      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' ")
+                .append("      GROUP BY PC.CREFITEM, CG.CATEGORY, P.PMANUFACTUREID, P.PMANUFACTURER, P.PREFITEM, P.BIGIMAGE, P.PNAME, P.PDESCRIPTION ")
+                .append(") WHERE row_num BETWEEN :startRow AND :endRow");
 
         MapSqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("crefItem", crefItem)
                 .addValue("startRow", startRow)
                 .addValue("endRow", endRow);
 
+        if (ucompanyRef != null) {
+            parameters.addValue("ucompanyRef", ucompanyRef);
+        }
+
         List<ProductsByCategoryResponseDto> products = jdbcTemplate.query(
-                sql,
+                sqlBuilder.toString(),
                 parameters,
                 new ProductsByCategoryResponseDtoMapper()
         );
 
-        String countQuery = "SELECT COUNT(*) "
-                + "      FROM PRODUCTS P "
-                + "           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' "
-                + "           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' "
-                + "           INNER JOIN (SELECT * FROM CATEGORYRELATION CR "
-                + "                        START WITH CR.CREFITEM = :crefItem "
-                + "                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM "
-                + "      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' ";
+        StringBuilder countQueryBuilder = new StringBuilder();
+        countQueryBuilder.append("SELECT COUNT(*) ")
+                .append("      FROM PRODUCTS P ")
+                .append("           INNER JOIN PRODUCTCATEGORIES PC ON P.PREFITEM = PC.PREFITEM AND PC.USE_YN = 'Y' ")
+                .append("           INNER JOIN CATEGORIES CG ON PC.CREFITEM = CG.CREFITEM AND CG.ISUSE = 'Y' ")
+                .append("           INNER JOIN (SELECT * FROM CATEGORYRELATION CR ")
+                .append("                        START WITH CR.CREFITEM = :crefItem ")
+                .append("                        CONNECT BY CR.CPARENTREF = PRIOR CR.CREFITEM) T ON PC.CREFITEM = T.CREFITEM ")
+                .append("           INNER JOIN BUYERPRICES BP ")
+                .append("                  ON P.PREFITEM = BP.PREFITEM ")
+                .append("                 AND BP.EDATE >= TO_CHAR(SYSDATE, 'YYYYMMDD') ")
+                .append("                 AND BP.BPRICE <> 0 AND BP.BPRICE <> 1 ");
+
+        if (ucompanyRef != null) {
+            if (regFlag.equals("Y")) {
+                countQueryBuilder.append("                 AND BP.UCOMPANYREF = :ucompanyRef ");
+            }
+            if (regFlag.equals("N")) {
+                countQueryBuilder.append("                 AND BP.UCOMPANYREF <> :ucompanyRef ");
+            }
+        }
+
+        countQueryBuilder.append("      WHERE P.ISUSE = 'Y' AND P.ISUSE_2 = 'Y' ");
 
         Optional<Long> totalElementsOpt = Optional.ofNullable(jdbcTemplate.queryForObject(
-                countQuery,
-                new MapSqlParameterSource("crefItem", crefItem),
+                countQueryBuilder.toString(),
+                parameters,
                 Long.class)
         );
 

@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class ProductsByCategoryRequestDto {
     private Long categoryId;
+    private Long ucompanyRef;
+    private String regFlag;
     private String sort;
     private Integer page;
     private Integer size;
